@@ -1,0 +1,1 @@
+"""User model and related database operations."""

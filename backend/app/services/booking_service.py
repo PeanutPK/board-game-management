@@ -1,0 +1,1 @@
+"""Booking business logic and interactions with the database focus on booking management and time slot validation."""

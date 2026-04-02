@@ -1,0 +1,1 @@
+"""Booking model and related database operations."""

@@ -1,0 +1,1 @@
+"""Game business logic and interactions with the database focus on stock checking."""

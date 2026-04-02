@@ -1,0 +1,1 @@
+"""User schema definitions for request validation and response formatting."""

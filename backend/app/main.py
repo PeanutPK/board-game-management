@@ -1,0 +1,1 @@
+"""Main application setup and entry point for the board game management system."""

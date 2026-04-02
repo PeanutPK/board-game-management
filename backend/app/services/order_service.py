@@ -1,0 +1,1 @@
+"""Order business logic and interactions with the database focus on stock updates and payment simulation."""

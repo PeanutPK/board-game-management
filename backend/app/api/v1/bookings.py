@@ -1,0 +1,1 @@
+"""API for game booking logics."""
