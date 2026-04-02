@@ -33,13 +33,7 @@ Extra information in the project [wiki](https://github.com/PeanutPK/board-game-m
     pip install -r requirements.txt
     ```
 
-4. Copy environment file and configure the variable inside
-
-    ```bash
-    cp example.env .env
-    ```
-
-5. Run the app
+4. Run the app
 
     ```bash
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -53,7 +47,13 @@ Extra information in the project [wiki](https://github.com/PeanutPK/board-game-m
     npm i
     ```
 
-2. Run app
+2. Copy environment file and configure the variable inside
+
+    ```bash
+    cp example.env .env
+    ```
+
+3. Run app
 
     ```bash
     npm run dev
