@@ -1,1 +1,47 @@
 """API for game browsing and management."""
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.schemas.game_schema import GameCreate, GameResponse, GameUpdate
+from app.services.game_service import GameService
+
+router = APIRouter(prefix="/games", tags=["games"])
+
+
+@router.get("/", response_model=list[GameResponse])
+def get_games(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Get all games with pagination."""
+    return GameService.get_all_games(db, skip=skip, limit=limit)
+
+
+@router.get("/{game_id}", response_model=GameResponse)
+def get_game(game_id: int, db: Session = Depends(get_db)):
+    """Get a specific game by ID."""
+    return GameService.get_game(db, game_id)
+
+
+@router.post("/", response_model=GameResponse)
+def create_game(game: GameCreate, db: Session = Depends(get_db)):
+    """Create a new game."""
+    return GameService.create_game(db, game)
+
+
+@router.put("/{game_id}", response_model=GameResponse)
+def update_game(
+    game_id: int,
+    game_update: GameUpdate,
+    db: Session = Depends(get_db)
+):
+    """Update an existing game."""
+    return GameService.update_game(db, game_id, game_update)
+
+
+@router.delete("/{game_id}")
+def delete_game(game_id: int, db: Session = Depends(get_db)):
+    """Delete a game."""
+    return GameService.delete_game(db, game_id)
