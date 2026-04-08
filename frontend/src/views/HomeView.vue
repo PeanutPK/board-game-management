@@ -86,6 +86,7 @@
 </template>
 
 <script setup lang="ts">
+import {AxiosError} from "axios";
 import { ref, computed, onMounted } from 'vue'
 import { login, register, saveToken, getToken } from '../api/auth'
 import { getGames } from '../api/games'
@@ -128,7 +129,11 @@ async function handleLogin() {
     loginForm.value = { username: '', password: '' }
     window.location.reload()
   } catch (error) {
-    loginError.value = 'Login failed. Please check your credentials.\n' + (error.response?.data?.detail || '')
+    if (error instanceof AxiosError) {
+      loginError.value = 'Login failed. Please check your credentials.\n' + (error.response?.data?.detail || '')
+    } else {
+      loginError.value = 'An unexpected error occurred.'
+    }
   }
 }
 
@@ -141,7 +146,11 @@ async function handleRegister() {
     registerForm.value = { email: '', username: '', password: '' }
     window.location.reload()
   } catch (error) {
-    registerError.value = 'Registration failed. Please try again.'
+    if (error instanceof AxiosError) {
+      registerError.value = 'Registration failed. Please try again.\n' + (error.response?.data?.detail || '')
+    } else {
+      registerError.value = 'An unexpected error occurred.'
+    }
   }
 }
 </script>

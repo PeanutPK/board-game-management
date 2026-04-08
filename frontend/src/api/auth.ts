@@ -1,6 +1,7 @@
 /**
  * Authentication API client
  */
+import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
@@ -21,35 +22,13 @@ export interface TokenResponse {
 }
 
 export async function register(data: UserRegister): Promise<TokenResponse> {
-  const response = await fetch(`${API_URL}/auth/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-
-  if (!response.ok) {
-    throw new Error('Registration failed')
-  }
-
-  return response.json()
+  const response = await axios.post(`${API_URL}/auth/register`, data)
+  return response.data
 }
 
 export async function login(credentials: UserLogin): Promise<TokenResponse> {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(credentials)
-  })
-
-  if (!response.ok) {
-    throw new Error('Login failed')
-  }
-
-  return response.json()
+  const response = await axios.post(`${API_URL}/auth/login`, credentials)
+  return response.data
 }
 
 export function saveToken(token: string): void {
