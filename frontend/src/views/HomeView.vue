@@ -1,116 +1,35 @@
 <template>
-  <div class="home">
-    <div class="hero">
-      <h1>Welcome to Board Game Management</h1>
-      <p>Browse, book, and order your favorite board games</p>
-      
-      <div v-if="!isLoggedIn" class="auth-buttons">
-        <button @click="showLoginForm = true" class="btn btn-primary">Login</button>
-        <button @click="showRegisterForm = true" class="btn btn-secondary">Register</button>
-      </div>
-      
-      <div v-else class="welcome-msg">
-        <p>Welcome back! <router-link to="/dashboard">Go to Dashboard</router-link></p>
-      </div>
+  <section class="hero">
+    <div class="left-hero">
+      <img :src="generatedLogo" alt="Board Game Management logo" class="hero-logo" />
     </div>
+    <div class="right-hero">
+      <h1 class="text-cblack">Welcome to Board Game Management</h1>
+      <p class="hero-subtitle">Browse, book, and order your favorite board games in one place.</p>
 
-    <!-- Login Form -->
-    <div v-if="showLoginForm" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="showLoginForm = false">&times;</span>
-        <h2>Login</h2>
-        <form @submit.prevent="handleLogin">
-          <input 
-            v-model="loginForm.username" 
-            type="text" 
-            placeholder="Username" 
-            required
-          />
-          <input 
-            v-model="loginForm.password" 
-            type="password" 
-            placeholder="Password" 
-            required
-          />
-          <button type="submit" class="btn btn-primary">Login</button>
-          <p v-if="loginError" class="error">{{ loginError }}</p>
-        </form>
-      </div>
-    </div>
-
-    <!-- Register Form -->
-    <div v-if="showRegisterForm" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="showRegisterForm = false">&times;</span>
-        <h2>Register</h2>
-        <form @submit.prevent="handleRegister">
-          <input 
-            v-model="registerForm.email" 
-            type="email" 
-            placeholder="Email" 
-            required
-          />
-          <input 
-            v-model="registerForm.username" 
-            type="text" 
-            placeholder="Username" 
-            required
-          />
-          <input 
-            v-model="registerForm.password" 
-            type="password" 
-            placeholder="Password" 
-            required
-          />
-          <button type="submit" class="btn btn-primary">Register</button>
-          <p v-if="registerError" class="error">{{ registerError }}</p>
-        </form>
-      </div>
-    </div>
-
-    <!-- Games Preview -->
-    <section class="games-preview">
-      <h2>Featured Games</h2>
-      <div class="games-grid">
-        <div v-for="game in games" :key="game.id" class="game-card">
-          <h3>{{ game.title }}</h3>
-          <p>{{ game.description }}</p>
-          <p class="price">${{ game.price.toFixed(2) }}</p>
-          <p :class="game.is_available ? 'available' : 'unavailable'">
-            {{ game.is_available ? 'Available' : 'Unavailable' }}
-          </p>
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <span class="stat-label">Games Listed</span>
+          <strong>{{ games.length }}</strong>
         </div>
+        <div class="stat-pill">
+          <span class="stat-label">Available Now</span>
+          <strong>{{ availableCount }}</strong>
+        </div>
+        <router-link to="/game" class="browse-link">Browse</router-link>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import {AxiosError} from "axios";
+import generatedLogo from '../assets/generatedLogo.png'
 import { ref, computed, onMounted } from 'vue'
-import { login, register, saveToken, getToken } from '../api/auth'
 import { getGames } from '../api/games'
 import type { Game } from '../api/games'
-import type { UserLogin, UserRegister } from '../api/auth'
 
 const games = ref<Game[]>([])
-const showLoginForm = ref(false)
-const showRegisterForm = ref(false)
-const loginError = ref('')
-const registerError = ref('')
-
-const loginForm = ref<UserLogin>({
-  username: '',
-  password: ''
-})
-
-const registerForm = ref<UserRegister>({
-  email: '',
-  username: '',
-  password: ''
-})
-
-const isLoggedIn = computed(() => !!getToken())
+const availableCount = computed(() => games.value.filter((game) => game.is_available).length)
 
 onMounted(async () => {
   try {
@@ -119,38 +38,154 @@ onMounted(async () => {
     console.error('Failed to fetch games:', error)
   }
 })
-
-async function handleLogin() {
-  try {
-    loginError.value = ''
-    const response = await login(loginForm.value)
-    saveToken(response.access_token)
-    showLoginForm.value = false
-    loginForm.value = { username: '', password: '' }
-    window.location.reload()
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      loginError.value = 'Login failed. Please check your credentials.\n' + (error.response?.data?.detail || '')
-    } else {
-      loginError.value = 'An unexpected error occurred.'
-    }
-  }
-}
-
-async function handleRegister() {
-  try {
-    registerError.value = ''
-    const response = await register(registerForm.value)
-    saveToken(response.access_token)
-    showRegisterForm.value = false
-    registerForm.value = { email: '', username: '', password: '' }
-    window.location.reload()
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      registerError.value = 'Registration failed. Please try again.\n' + (error.response?.data?.detail || '')
-    } else {
-      registerError.value = 'An unexpected error occurred.'
-    }
-  }
-}
 </script>
+
+<style scoped>
+h1 {
+  margin: 0.45rem 0 0.7rem;
+  line-height: 1.12;
+  font-size: clamp(1.9rem, 3.2vw, 2.9rem);
+  font-weight: bolder;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(200px, 320px) minmax(280px, 1fr);
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+.left-hero {
+  width: 100%;
+  height: clamp(150px, 24vw, 240px);
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-logo {
+  width: 100%;
+  height: 100%;
+  max-width: 320px;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+}
+
+.right-hero {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.hero-subtitle {
+  margin: 0;
+  color: var(--color-cdarkslategray);
+  max-width: 60ch;
+  line-height: 1.6;
+}
+
+.hero-stats {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.stat-pill {
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-cdarkslategray);
+  background: var(--color-cgainsboro);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.stat-label {
+  color: var(--color-cdarkslategray);
+  font-size: 0.8rem;
+}
+
+.browse-link {
+  color: var(--color-cdarkslategray);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-left: 0;
+  align-self: center;
+}
+
+.browse-link:hover {
+  border-color: var(--color-cdarkslategray);
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.section-head h2 {
+  margin: 0;
+  color: var(--color-cblack);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(180px, 260px) 1fr;
+  }
+
+  .hero-subtitle {
+    max-width: 52ch;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .left-hero {
+    height: clamp(120px, 38vw, 190px);
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-logo {
+    max-width: 220px;
+  }
+
+  .right-hero {
+    width: 100%;
+  }
+
+  .hero-subtitle {
+    margin: 0 auto;
+  }
+
+  .hero-stats {
+    justify-content: center;
+  }
+
+  .browse-link {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-pill {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>

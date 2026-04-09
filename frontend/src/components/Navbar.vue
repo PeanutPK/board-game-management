@@ -1,14 +1,18 @@
 <template>
   <nav class="navbar py-3">
-    <div class="mx-auto flex w-full items-center justify-between gap-4">
-      <router-link to="/" class="navbar-brand flex items-center gap-4" @click="closeMobileMenu">
+    <div class="mx-auto flex w-full items-center justify-end sm:justify-between text-centergap-4">
+      <router-link
+        to="/"
+        class="navbar-brand items-center gap-4 hidden sm:flex text-center"
+        @click="closeMobileMenu"
+      >
         <img
           :src="generatedLogo"
           alt="website logo"
           loading="lazy"
           class="object-center object-cover rounded-full size-20 transform scale-125"
         />
-        <div class="hidden sm:block text-center">
+        <div>
           <p>BOARD GAME</p>
           <p>Management</p>
         </div>

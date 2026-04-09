@@ -18,4 +18,5 @@
 import { RouterView } from 'vue-router'
 import Navbar from './components/Navbar.vue'
 import PageFooter from './components/PageFooter.vue'
+console.clear()
 </script>
