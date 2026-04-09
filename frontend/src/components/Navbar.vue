@@ -1,9 +1,18 @@
 <template>
-  <nav class="navbar px-4 py-3 md:px-6 bg-cindianred text-cgainsboro">
-    <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
-      <router-link to="/" class="navbar-brand" @click="closeMobileMenu"
-        >Board Game Management</router-link
-      >
+  <nav class="navbar py-3">
+    <div class="mx-auto flex w-full items-center justify-between gap-4">
+      <router-link to="/" class="navbar-brand flex items-center gap-4" @click="closeMobileMenu">
+        <img
+          :src="generatedLogo"
+          alt="website logo"
+          loading="lazy"
+          class="object-center object-cover rounded-full size-20 transform scale-125"
+        />
+        <div class="hidden sm:block text-center">
+          <p>BOARD GAME</p>
+          <p>Management</p>
+        </div>
+      </router-link>
 
       <button
         class="menu-toggle md:hidden"
@@ -40,6 +49,7 @@ defineOptions({
   name: 'AppNavbar',
 })
 
+import generatedLogo from '../assets/generatedLogo.png'
 import { computed, ref } from 'vue'
 import { logout as logoutUser } from '../api/auth'
 import { useUserStore } from '../stores/counter'
@@ -89,7 +99,7 @@ function handleLogout() {
   left: 50%;
   width: 1.15rem;
   height: 2px;
-  background: #ffffff;
+  background: var(--color-cgainsboro);
   transform: translateX(-50%);
   transition:
     transform 0.2s ease,
@@ -140,7 +150,7 @@ function handleLogout() {
   padding: 0.48rem 0.8rem;
   border-radius: 0.6rem;
   border: 1px solid transparent;
-  color: #fff;
+  color: var(--color-cgainsboro);
   text-decoration: none;
   font-weight: 600;
   transition:
@@ -150,13 +160,13 @@ function handleLogout() {
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: var(--color-cdarkslategray);
+  border-color: var(--color-cblack);
 }
 
 .nav-link.router-link-active {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: var(--color-cdarkslategray);
+  border-color: var(--color-cdarkslategray);
 }
 
 .nav-link:active {
@@ -165,9 +175,10 @@ function handleLogout() {
 
 .logout-btn {
   cursor: pointer;
-  background: rgba(67, 86, 99, 0.28);
+  background: var(--color-cindianred);
 }
 
+/* hamburger menu */
 @media (max-width: 767px) {
   .right-navbar {
     position: absolute;
@@ -180,8 +191,8 @@ function handleLogout() {
     gap: 0.5rem;
     padding: 0.85rem;
     border-radius: 0.9rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(67, 86, 99, 0.94);
+    border: 1px solid var(--color-cdarkslategray);
+    background: var(--color-cblack);
     backdrop-filter: blur(4px);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
   }
