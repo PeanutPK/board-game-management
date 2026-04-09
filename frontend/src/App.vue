@@ -1,23 +1,22 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-</script>
-
 <template>
   <div id="app">
     <header>
-      <nav>
-        <div class="nav-brand">Board Game Management</div>
-        <div class="nav-links">
-          <RouterLink to="/">Home</RouterLink>
-          <RouterLink to="/dashboard">Dashboard</RouterLink>
-          <RouterLink to="/inventory">Inventory</RouterLink>
-        </div>
-      </nav>
+      <Navbar />
     </header>
 
     <main>
       <RouterView />
     </main>
+
+    <footer>
+      <PageFooter />
+    </footer>
   </div>
 </template>
 
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+import Navbar from './components/Navbar.vue'
+import PageFooter from './components/PageFooter.vue'
+console.clear()
+</script>

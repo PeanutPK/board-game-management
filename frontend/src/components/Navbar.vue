@@ -1,28 +1,47 @@
 <template>
-  <nav class="navbar">
-    <div class="navbar-container">
-      <router-link to="/" class="navbar-brand"> 🎲 Board Game Management </router-link>
+  <nav class="navbar py-3">
+    <div class="mx-auto flex w-full items-center justify-end sm:justify-between text-centergap-4">
+      <router-link
+        to="/"
+        class="navbar-brand items-center gap-4 hidden sm:flex text-center"
+        @click="closeMobileMenu"
+      >
+        <img
+          :src="generatedLogo"
+          alt="website logo"
+          loading="lazy"
+          class="object-center object-cover rounded-full size-20 transform scale-125"
+        />
+        <div>
+          <p>BOARD GAME</p>
+          <p>Management</p>
+        </div>
+      </router-link>
 
-      <button class="hamburger" @click="toggleMenu" :class="{ active: isMenuOpen }">
-        <span></span>
-        <span></span>
-        <span></span>
+      <button
+        class="menu-toggle md:hidden"
+        type="button"
+        :aria-expanded="isMobileMenuOpen"
+        aria-controls="nav-menu"
+        aria-label="Toggle navigation"
+        @click="toggleMobileMenu"
+      >
+        <span class="sr-only">Toggle menu</span>
+        <span class="menu-icon" :class="{ 'menu-icon-open': isMobileMenuOpen }"></span>
       </button>
 
-      <div class="nav-menu" :class="{ active: isMenuOpen }">
-        <router-link to="/" class="nav-link" @click="isMenuOpen = false">Home</router-link>
-        <router-link to="/inventory" class="nav-link" @click="isMenuOpen = false"
-          >Inventory</router-link
-        >
+      <div id="nav-menu" class="right-navbar" :class="isMobileMenuOpen ? 'is-open' : 'is-closed'">
+        <router-link to="/game" class="nav-link" @click="closeMobileMenu">Game List</router-link>
 
-        <div v-if="isLoggedIn" class="user-menu">
-          <router-link to="/dashboard" class="nav-link" @click="isMenuOpen = false">
-            Dashboard
-          </router-link>
-          <button @click="handleLogout" class="nav-link logout-btn">Logout</button>
+        <div v-if="!isLoggedIn" class="user-menu">
+          <router-link to="/dashboard" class="nav-link" @click="closeMobileMenu"
+            >Dashboard</router-link
+          >
+          <button @click="handleLogout" class="nav-link logout-btn" type="button">Logout</button>
         </div>
-        <div v-else class="auth-menu">
-          <router-link to="/" class="nav-link" @click="isMenuOpen = false">Login</router-link>
+
+        <div v-else>
+          <router-link to="/login" class="nav-link" @click="closeMobileMenu">Login</router-link>
         </div>
       </div>
     </div>
@@ -34,177 +53,171 @@ defineOptions({
   name: 'AppNavbar',
 })
 
-import { ref, computed } from 'vue'
+import generatedLogo from '../assets/generatedLogo.png'
+import { computed, ref } from 'vue'
 import { logout as logoutUser } from '../api/auth'
 import { useUserStore } from '../stores/counter'
 
-const isMenuOpen = ref(false)
 const userStore = useUserStore()
 const isLoggedIn = computed(() => userStore.isLoggedIn)
+const isMobileMenuOpen = ref(false)
 
-function toggleMenu() {
-  isMenuOpen.value = !isMenuOpen.value
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+function closeMobileMenu() {
+  isMobileMenuOpen.value = false
 }
 
 function handleLogout() {
   logoutUser()
   userStore.logout()
-  isMenuOpen.value = false
+  closeMobileMenu()
   window.location.href = '/'
 }
 </script>
 
 <style scoped>
-.navbar {
-  background-color: #333;
-  padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.navbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .navbar-brand {
-  color: white;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: bold;
-  transition: color 0.3s;
 }
 
-.navbar-brand:hover {
-  color: #4caf50;
+.menu-toggle {
+  position: relative;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.hamburger {
-  display: none;
-  flex-direction: column;
-  background: none;
-  border: none;
-  cursor: pointer;
-  gap: 0.4rem;
+.menu-icon,
+.menu-icon::before,
+.menu-icon::after {
+  display: block;
+  position: absolute;
+  left: 50%;
+  width: 1.15rem;
+  height: 2px;
+  background: var(--color-cgainsboro);
+  transform: translateX(-50%);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  content: '';
 }
 
-.hamburger span {
-  width: 25px;
-  height: 3px;
-  background-color: white;
-  transition: 0.3s;
-  border-radius: 2px;
+.menu-icon {
+  top: 50%;
 }
 
-@media (max-width: 768px) {
-  .hamburger {
-    display: flex;
-  }
-
-  .hamburger.active span:nth-child(1) {
-    transform: rotate(-45deg) translate(-8px, 8px);
-  }
-
-  .hamburger.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .hamburger.active span:nth-child(3) {
-    transform: rotate(45deg) translate(-7px, -7px);
-  }
+.menu-icon::before {
+  top: -0.38rem;
 }
 
-.nav-menu {
+.menu-icon::after {
+  top: 0.38rem;
+}
+
+.menu-icon-open {
+  background: transparent;
+}
+
+.menu-icon-open::before {
+  transform: translateX(-50%) translateY(0.38rem) rotate(45deg);
+}
+
+.menu-icon-open::after {
+  transform: translateX(-50%) translateY(-0.38rem) rotate(-45deg);
+}
+
+.right-navbar {
   display: flex;
-  gap: 1rem;
   align-items: center;
+  gap: 0.6rem;
 }
 
-@media (max-width: 768px) {
-  .nav-menu {
-    position: absolute;
-    left: 0;
-    top: 60px;
-    width: 100%;
-    background-color: #222;
-    flex-direction: column;
-    gap: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s;
-  }
-
-  .nav-menu.active {
-    max-height: 300px;
-  }
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .nav-link {
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.48rem 0.8rem;
+  border-radius: 0.6rem;
+  border: 1px solid transparent;
+  color: var(--color-cgainsboro);
   text-decoration: none;
-  transition: color 0.3s;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .nav-link:hover {
-  color: #4caf50;
-  background-color: rgba(76, 175, 80, 0.1);
+  background: var(--color-cdarkslategray);
+  border-color: var(--color-cblack);
 }
 
-@media (max-width: 768px) {
-  .nav-link {
-    display: block;
-    width: 100%;
-    text-align: left;
-    border-radius: 0;
-    padding: 1rem;
-    border-bottom: 1px solid #444;
-  }
+.nav-link.router-link-active {
+  background: var(--color-cdarkslategray);
+  border-color: var(--color-cdarkslategray);
 }
 
-.user-menu,
-.auth-menu {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-@media (max-width: 768px) {
-  .user-menu,
-  .auth-menu {
-    flex-direction: column;
-    width: 100%;
-    gap: 0;
-  }
+.nav-link:active {
+  transform: translateY(1px);
 }
 
 .logout-btn {
-  background: none;
-  border: none;
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  color: white;
+  background: var(--color-cindianred);
 }
 
-.logout-btn:hover {
-  color: #d32f2f;
-}
+/* hamburger menu */
+@media (max-width: 767px) {
+  .right-navbar {
+    position: absolute;
+    top: 4rem;
+    left: 1rem;
+    right: 1rem;
+    z-index: 20;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--color-cdarkslategray);
+    background: var(--color-cblack);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+  }
 
-@media (max-width: 768px) {
+  .right-navbar.is-closed {
+    display: none;
+  }
+
+  .right-navbar.is-open {
+    display: flex;
+  }
+
+  .nav-link,
   .logout-btn {
-    display: block;
     width: 100%;
-    text-align: left;
-    border-radius: 0;
-    padding: 1rem;
-    border-bottom: 1px solid #444;
+  }
+
+  .user-menu {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
   }
 }
 </style>

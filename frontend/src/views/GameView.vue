@@ -1,6 +1,6 @@
 <template>
-  <div class="inventory">
-    <h1>Game Inventory</h1>
+  <div class="game-list-container">
+    <h1>Game List</h1>
 
     <div v-if="!isLoggedIn" class="login-required">
       <p>Please log in to book or order games</p>
@@ -131,7 +131,7 @@ const orderData = ref({
 })
 
 const filteredGames = computed(() => {
-  let result = games.value.filter(game =>
+  const result = games.value.filter(game =>
     game.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 

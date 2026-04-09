@@ -1,2 +1,49 @@
 @import 'tailwindcss';
-@import './base.css';
+
+/* Custom theme colors */
+@theme {
+  --color-cblack: #2c2c2c;
+  --color-cindianred: #d34e4e;
+  --color-cmoccasin: #f9e7b2;
+  --color-cdarkkhaki: #ddc57a;
+  --color-cdarksalmon: #ce7e5a;
+  --color-cdarkslategray: #435663;
+  --color-cgainsboro: #e3e3e3;
+}
+
+#app {
+  box-sizing: border-box;
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  height: 100%;
+  background-color: var(--color-cmoccasin);
+  color: var(--color-cblack);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  flex-grow: 1;
+}
+
+header,
+footer {
+  background-color: var(--color-cindianred);
+  color: var(--color-cgainsboro);
+  flex-grow: 0;
+  flex-shrink: 0;
+  padding: 0 2rem;
+}
+
+footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+}
+
+main {
+  padding: 2rem;
+  gap: 2rem;
+  min-height: fill-available;
+}

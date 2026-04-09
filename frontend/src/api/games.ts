@@ -2,6 +2,7 @@
  * Games API client
  */
 
+import axios from 'axios'
 import { getToken } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -26,69 +27,76 @@ function getHeaders() {
   const token = getToken()
   return {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
+    ...(token && { Authorization: `Bearer ${token}` }),
   }
 }
 
-export async function getGames(skip: number = 0, limit: number = 10): Promise<Game[]> {
-  const response = await fetch(`${API_URL}/games/?skip=${skip}&limit=${limit}`, {
-    headers: getHeaders()
-  })
+export async function getGames(skip: number = 0, limit: number = 10, available_only: boolean = false): Promise<Game[]> {
+  const response = await axios
+    .get(`${API_URL}/games/?skip=${skip}&limit=${limit}&available_only=${available_only}`, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to fetch games', error)
+    })
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch games')
-  }
+  return response.data
+}
 
-  return response.json()
+export async function getGameStats(): Promise<{ total: number; available: number }> {
+  const response = await axios
+    .get(`${API_URL}/games/stats`, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to fetch game stats', error)
+    })
+
+  return response.data
 }
 
 export async function getGame(id: number): Promise<Game> {
-  const response = await fetch(`${API_URL}/games/${id}`, {
-    headers: getHeaders()
-  })
+  const response = await axios
+    .get(`${API_URL}/games/${id}`, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to fetch game', error)
+    })
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch game')
-  }
-
-  return response.json()
+  return response.data
 }
 
 export async function createGame(game: GameCreate): Promise<Game> {
-  const response = await fetch(`${API_URL}/games/`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(game)
-  })
+  const response = await axios
+    .post(`${API_URL}/games/`, game, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to create game', error)
+    })
 
-  if (!response.ok) {
-    throw new Error('Failed to create game')
-  }
-
-  return response.json()
+  return response.data
 }
 
 export async function updateGame(id: number, game: Partial<GameCreate>): Promise<Game> {
-  const response = await fetch(`${API_URL}/games/${id}`, {
-    method: 'PUT',
-    headers: getHeaders(),
-    body: JSON.stringify(game)
-  })
+  const response = await axios
+    .put(`${API_URL}/games/${id}`, game, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to update game', error)
+    })
 
-  if (!response.ok) {
-    throw new Error('Failed to update game')
-  }
-
-  return response.json()
+  return response.data
 }
 
 export async function deleteGame(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/games/${id}`, {
-    method: 'DELETE',
-    headers: getHeaders()
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to delete game')
-  }
+  const response = await axios
+    .delete(`${API_URL}/games/${id}`, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to delete game', error)
+    })
 }

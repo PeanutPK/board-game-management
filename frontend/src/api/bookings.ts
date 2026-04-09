@@ -1,7 +1,7 @@
 /**
  * Bookings API client
  */
-
+import axios from 'axios'
 import { getToken } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -29,40 +29,34 @@ function getHeaders() {
 }
 
 export async function createBooking(booking: BookingCreate): Promise<Booking> {
-  const response = await fetch(`${API_URL}/bookings/`, {
-    method: 'POST',
+  const response = await axios.post(`${API_URL}/bookings/`, booking, {
     headers: getHeaders(),
-    body: JSON.stringify(booking)
+  })
+  .catch(function(error) {
+    throw new Error('Failed to create booking')
   })
 
-  if (!response.ok) {
-    throw new Error('Failed to create booking')
-  }
-
-  return response.json()
+  return response.data
 }
 
 export async function getMyBookings(): Promise<Booking[]> {
-  const response = await fetch(`${API_URL}/bookings/`, {
+  const response = await axios.get(`${API_URL}/bookings/`, {
     headers: getHeaders()
   })
-
-  if (!response.ok) {
+  .catch(function(error) {
     throw new Error('Failed to fetch bookings')
-  }
+  })
 
-  return response.json()
+  return response.data
 }
 
 export async function returnBooking(bookingId: number): Promise<Booking> {
-  const response = await fetch(`${API_URL}/bookings/${bookingId}/return`, {
-    method: 'POST',
+  const response = await axios.post(`${API_URL}/bookings/${bookingId}/return`, {}, {
     headers: getHeaders()
   })
-
-  if (!response.ok) {
+  .catch(function(error) {
     throw new Error('Failed to return booking')
-  }
+  })
 
-  return response.json()
+  return response.data
 }

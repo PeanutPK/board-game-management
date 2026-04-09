@@ -2,6 +2,7 @@
  * Orders API client
  */
 
+import axios from 'axios'
 import { getToken } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -24,45 +25,46 @@ function getHeaders() {
   const token = getToken()
   return {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
   }
 }
 
 export async function createOrder(order: OrderCreate): Promise<Order> {
-  const response = await fetch(`${API_URL}/orders/`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(order)
-  })
+  const response = await axios
+    .post(`${API_URL}/orders/`, order, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to create order')
+    })
 
-  if (!response.ok) {
-    throw new Error('Failed to create order')
-  }
-
-  return response.json()
+  return response.data
 }
 
 export async function getMyOrders(): Promise<Order[]> {
-  const response = await fetch(`${API_URL}/orders/`, {
-    headers: getHeaders()
-  })
+  const response = await axios
+    .get(`${API_URL}/orders/`, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to fetch orders')
+    })
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch orders')
-  }
-
-  return response.json()
+  return response.data
 }
 
 export async function cancelOrder(orderId: number): Promise<Order> {
-  const response = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
-    method: 'POST',
-    headers: getHeaders()
-  })
+  const response = await axios
+    .post(
+      `${API_URL}/orders/${orderId}/cancel`,
+      {},
+      {
+        headers: getHeaders(),
+      },
+    )
+    .catch(function (error) {
+      throw new Error('Failed to cancel order')
+    })
 
-  if (!response.ok) {
-    throw new Error('Failed to cancel order')
-  }
-
-  return response.json()
+  return response.data
 }

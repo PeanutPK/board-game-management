@@ -11,7 +11,7 @@ from app.api.v1 import auth, games, bookings, orders
 Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
-app = FastAPI(title=settings.PROJECT_NAME)
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION, description="API for managing board games, bookings, and orders.", docs_url=f"{settings.API_V_STR}/docs", redoc_url=f"{settings.API_V_STR}/redoc")
 
 # Add CORS middleware
 app.add_middleware(
@@ -23,19 +23,19 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth.router, prefix=settings.API_V1_STR)
-app.include_router(games.router, prefix=settings.API_V1_STR)
-app.include_router(bookings.router, prefix=settings.API_V1_STR)
-app.include_router(orders.router, prefix=settings.API_V1_STR)
+app.include_router(auth.router, prefix=settings.API_V_STR)
+app.include_router(games.router, prefix=settings.API_V_STR)
+app.include_router(bookings.router, prefix=settings.API_V_STR)
+app.include_router(orders.router, prefix=settings.API_V_STR)
 
 
-@app.get("/")
+@app.get(f"{settings.API_V_STR}/")
 def read_root():
     """Root endpoint."""
     return {"message": "Board Game Management API"}
 
 
-@app.get("/health")
+@app.get(f"{settings.API_V_STR}/health")
 def health_check():
     """Health check endpoint."""
-    return {"status": "ok"}
+    return {"status": "ok", "version": settings.PROJECT_VERSION}
