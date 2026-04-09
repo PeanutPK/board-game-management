@@ -1,2 +1,18 @@
 @import 'tailwindcss';
-@import './base.css';
+
+/* Custom theme colors */
+@theme {
+  --color-cblack: #2C2C2C;
+  --color-cindianred: #D34E4E;
+  --color-cmoccasin: #F9E7B2;
+  --color-cdarkkhaki: #DDC57A;
+  --color-cdarksalmon: #CE7E5A;
+  --color-cdarkslategray: #435663;
+  --color-cgainsboro: #E3E3E3;
+}
+
+body {
+  background-color: var(--color-cmoccasin);
+  color: var(--color-cblack);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
