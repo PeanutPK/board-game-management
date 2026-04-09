@@ -31,13 +31,25 @@ function getHeaders() {
   }
 }
 
-export async function getGames(skip: number = 0, limit: number = 10): Promise<Game[]> {
+export async function getGames(skip: number = 0, limit: number = 10, available_only: boolean = false): Promise<Game[]> {
   const response = await axios
-    .get(`${API_URL}/games/?skip=${skip}&limit=${limit}`, {
+    .get(`${API_URL}/games/?skip=${skip}&limit=${limit}&available_only=${available_only}`, {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to fetch games')
+      throw new Error('Failed to fetch games', error)
+    })
+
+  return response.data
+}
+
+export async function getGameStats(): Promise<{ total: number; available: number }> {
+  const response = await axios
+    .get(`${API_URL}/games/stats`, {
+      headers: getHeaders(),
+    })
+    .catch(function (error) {
+      throw new Error('Failed to fetch game stats', error)
     })
 
   return response.data
@@ -49,7 +61,7 @@ export async function getGame(id: number): Promise<Game> {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to fetch game')
+      throw new Error('Failed to fetch game', error)
     })
 
   return response.data
@@ -61,7 +73,7 @@ export async function createGame(game: GameCreate): Promise<Game> {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to create game')
+      throw new Error('Failed to create game', error)
     })
 
   return response.data
@@ -73,7 +85,7 @@ export async function updateGame(id: number, game: Partial<GameCreate>): Promise
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to update game')
+      throw new Error('Failed to update game', error)
     })
 
   return response.data
@@ -85,6 +97,6 @@ export async function deleteGame(id: number): Promise<void> {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to delete game')
+      throw new Error('Failed to delete game', error)
     })
 }

@@ -10,11 +10,11 @@
       <div class="hero-stats">
         <div class="stat-pill">
           <span class="stat-label">Games Listed</span>
-          <strong>{{ games.length }}</strong>
+          <strong>{{ gameStats.total }}</strong>
         </div>
         <div class="stat-pill">
           <span class="stat-label">Available Now</span>
-          <strong>{{ availableCount }}</strong>
+          <strong>{{ gameStats.available }}</strong>
         </div>
         <router-link to="/game" class="browse-link">Browse</router-link>
       </div>
@@ -24,18 +24,17 @@
 
 <script setup lang="ts">
 import generatedLogo from '../assets/generatedLogo.png'
-import { ref, computed, onMounted } from 'vue'
-import { getGames } from '../api/games'
-import type { Game } from '../api/games'
+import { ref, onMounted } from 'vue'
+import { getGameStats } from '../api/games'
 
-const games = ref<Game[]>([])
-const availableCount = computed(() => games.value.filter((game) => game.is_available).length)
+const gameStats = ref<{ total: number; available: number }>({ total: 0, available: 0 })
 
 onMounted(async () => {
   try {
-    games.value = await getGames(0, 6)
+    gameStats.value = await getGameStats()
+    console.log('Game stats fetched successfully:', gameStats.value)
   } catch (error) {
-    console.error('Failed to fetch games:', error)
+    console.error('Failed to fetch game stats:', error)
   }
 })
 </script>
