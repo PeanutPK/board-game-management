@@ -33,7 +33,7 @@
       <div id="nav-menu" class="right-navbar" :class="isMobileMenuOpen ? 'is-open' : 'is-closed'">
         <router-link to="/game" class="nav-link" @click="closeMobileMenu">Game List</router-link>
 
-        <div v-if="!isLoggedIn" class="user-menu">
+        <div v-if="isLoggedIn" class="user-menu">
           <router-link to="/dashboard" class="nav-link" @click="closeMobileMenu"
             >Dashboard</router-link
           >
@@ -41,7 +41,7 @@
         </div>
 
         <div v-else>
-          <router-link to="/login" class="nav-link" @click="closeMobileMenu">Login</router-link>
+          <router-link to="/auth" class="nav-link" @click="closeMobileMenu">Login</router-link>
         </div>
       </div>
     </div>

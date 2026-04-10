@@ -1,7 +1,7 @@
 <template>
-  <div class="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg text-gray-800">
+  <div class="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg text-cblack">
     <h1 class="text-3xl font-bold mb-4 border-b pb-2 text-cblack">Privacy Policy</h1>
-    <p class="text-sm text-gray-500 mb-6">Last Updated: April 2024</p>
+    <p class="text-sm text-cdarkslategray mb-6">Last Updated: April 2024</p>
 
     <section class="mb-6">
       <h2 class="text-xl font-semibold mb-2">1. Introduction</h2>
@@ -72,7 +72,7 @@
       </p>
     </section>
 
-    <footer class="mt-8 pt-4 border-t text-center text-gray-400 text-xs">
+    <footer class="mt-8 pt-4 border-t text-center text-cdarkslategray text-xs">
       &copy; 2026 Board Game Management System. For Educational Simulation Purposes Only.
     </footer>
   </div>
