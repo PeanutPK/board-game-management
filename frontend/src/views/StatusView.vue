@@ -56,14 +56,20 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.status-container {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  align-items: center;
+  justify-items: center;
+}
+
 .status-card {
   width: min(680px, 100%);
   border-radius: 1rem;
   border: 1px solid var(--color-cdarkslategray);
   background: var(--color-cgainsboro);
-  backdrop-filter: blur(4px);
   padding: 1.4rem;
-  box-shadow: 0 18px 34px rgba(67, 86, 99, 0.14);
 }
 
 .eyebrow {
