@@ -1,14 +1,14 @@
 <template>
   <div id="app">
-    <header>
+    <header class="shrink-0">
       <Navbar />
     </header>
 
-    <main>
+    <main class="grow overflow-y-auto">
       <RouterView />
     </main>
 
-    <footer>
+    <footer class="shrink-0">
       <PageFooter />
     </footer>
   </div>
