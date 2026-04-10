@@ -1,6 +1,6 @@
 """User schema definitions for request validation and response formatting."""
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserCreate(BaseModel):
@@ -8,7 +8,10 @@ class UserCreate(BaseModel):
 
     email: EmailStr
     username: str
-    password: str
+    password: str = Field(..., min_length=8, max_length=72)
+
+    class Config:
+        from_attributes = True
 
 
 class UserResponse(BaseModel):
@@ -17,8 +20,11 @@ class UserResponse(BaseModel):
     id: int
     email: str
     username: str
-    is_active: bool
+    is_staff: bool
     is_admin: bool
+
+    class Config:
+        from_attributes = True
 
 
 class UserLogin(BaseModel):
