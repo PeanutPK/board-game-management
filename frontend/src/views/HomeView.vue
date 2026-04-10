@@ -16,7 +16,12 @@
           <span class="stat-label">Available Now</span>
           <strong>{{ gameStats.available }}</strong>
         </div>
-        <router-link to="/game" class="browse-link">Browse</router-link>
+      </div>
+      <div class="hero-link">
+        <router-link to="/game" class="browse-link">
+          <p>Start Browsing</p>
+          <Icon icon="mdi:arrow-right" style="font-size: 24px; font-weight: bolder" />
+        </router-link>
       </div>
     </div>
   </section>
@@ -24,6 +29,7 @@
 
 <script setup lang="ts">
 import generatedLogo from '../assets/generatedLogo.png'
+import { Icon } from '@iconify/vue'
 import { ref, onMounted } from 'vue'
 import { getGameStats } from '../api/games'
 
@@ -41,6 +47,7 @@ onMounted(async () => {
 
 <style scoped>
 h1 {
+  width: fit-content;
   margin: 0.45rem 0 0.7rem;
   line-height: 1.12;
   font-size: clamp(1.9rem, 3.2vw, 2.9rem);
@@ -55,6 +62,12 @@ h1 {
   width: min(1080px, 100%);
   margin: 0 auto;
   padding: 0.75rem 1rem;
+}
+
+.hero-link {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 1rem;
 }
 
 .left-hero {
@@ -78,7 +91,7 @@ h1 {
 
 .right-hero {
   flex: 1;
-  width: 100%;
+  width: fit-content;
   min-width: 0;
 }
 
@@ -113,6 +126,9 @@ h1 {
 }
 
 .browse-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   color: var(--color-cdarkslategray);
   font-weight: 700;
   text-decoration: none;
