@@ -6,12 +6,12 @@
         class="navbar-brand items-center gap-4 hidden sm:flex text-center"
         @click="closeMobileMenu"
       >
-        <img
+        <!-- <img
           :src="generatedLogo"
           alt="website logo"
           loading="lazy"
           class="object-center object-cover rounded-full size-20 transform scale-125"
-        />
+        /> -->
         <div>
           <p>BOARD GAME</p>
           <p>Management</p>
@@ -53,7 +53,7 @@ defineOptions({
   name: 'AppNavbar',
 })
 
-import generatedLogo from '../assets/generatedLogo.png'
+// import generatedLogo from '../assets/generatedLogo.png'
 import { computed, ref } from 'vue'
 import { logout as logoutUser } from '../api/auth'
 import { useUserStore } from '../stores/counter'
