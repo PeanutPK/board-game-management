@@ -51,4 +51,11 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     access_token = create_access_token(
         data={"sub": str(db_user.id)}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "username": db_user.username,
+        "user_role": (
+            "admin" if db_user.is_admin else "staff" if db_user.is_staff else "user"
+        ),
+    }

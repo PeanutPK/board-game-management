@@ -31,6 +31,12 @@
       </button>
 
       <div id="nav-menu" class="right-navbar" :class="isMobileMenuOpen ? 'is-open' : 'is-closed'">
+        <div v-if="isLoggedIn && userStore.userRole === 'admin'">
+          <router-link to="/admin" class="nav-link" @click="closeMobileMenu">Admin</router-link>
+        </div>
+        <div v-if="isLoggedIn && isStaffOrAdmin">
+          <router-link to="/manage" class="nav-link" @click="closeMobileMenu">Manage</router-link>
+        </div>
         <router-link to="/game" class="nav-link" @click="closeMobileMenu">Game List</router-link>
 
         <div v-if="isLoggedIn" class="user-menu">
@@ -61,6 +67,10 @@ import { useUserStore } from '../stores/counter'
 const userStore = useUserStore()
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const isMobileMenuOpen = ref(false)
+const isStaffOrAdmin = computed(() => {
+  const role = userStore.userRole
+  return role === 'staff' || role === 'admin'
+})
 
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value

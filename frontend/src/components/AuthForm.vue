@@ -98,7 +98,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register } from '@/api/auth'
-import { saveToken } from '@/api/auth'
+import { saveUserData } from '@/api/auth'
 import { useUserStore } from '@/stores/counter'
 
 import { Icon } from '@iconify/vue'
@@ -138,17 +138,21 @@ const handleSubmit = async () => {
 
     if (currentForm.value === 'login') {
       const response = await login({ username, password })
-      saveToken(response.access_token)
+      saveUserData(response)
       userStore.setToken(response.access_token)
-      router.push('/dashboard')
+      userStore.setRole(response.user_role)
+      userStore.setUsername(response.username)
+      router.push('/')
     } else {
       const response = await register({
         email,
         username,
         password,
       })
-      saveToken(response.access_token)
+      saveUserData(response)
       userStore.setToken(response.access_token)
+      userStore.setRole(response.user_role)
+      userStore.setUsername(response.username)
       router.push('/dashboard')
     }
   } catch (error) {

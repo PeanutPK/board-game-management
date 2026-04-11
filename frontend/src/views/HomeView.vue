@@ -4,7 +4,16 @@
       <img :src="generatedLogo" alt="Board Game Management logo" class="hero-logo" />
     </div>
     <div class="right-hero">
-      <h1 class="text-cblack">Welcome to Board Game Management</h1>
+      <h1 class="text-cblack">
+        <div class="flex">
+          Welcome&nbsp;
+          <p v-if="getUsername()" class="text-cdarkslategray font-extrabold underline">
+            {{ getUsername() }}
+          </p>
+          &nbsp;
+        </div>
+        to Board Game Management
+      </h1>
       <p class="hero-subtitle">Browse, book, and order your favorite board games in one place.</p>
 
       <div class="hero-stats">
@@ -33,6 +42,7 @@ import generatedLogo from '@/assets/generatedLogo.png'
 
 import { Icon } from '@iconify/vue'
 import { ref, onMounted } from 'vue'
+import { getUsername } from '@/api/auth'
 import { getGameStats } from '@/api/games'
 
 const gameStats = ref<{ total: number; available: number }>({ total: 0, available: 0 })

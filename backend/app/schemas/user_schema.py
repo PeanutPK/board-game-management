@@ -1,5 +1,6 @@
 """User schema definitions for request validation and response formatting."""
 
+from typing import Literal
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -20,8 +21,6 @@ class UserResponse(BaseModel):
     id: int
     email: str
     username: str
-    is_staff: bool
-    is_admin: bool
 
     class Config:
         from_attributes = True
@@ -39,3 +38,5 @@ class Token(BaseModel):
 
     access_token: str
     token_type: str = "bearer"
+    username: str
+    user_role: Literal["admin", "staff", "user"]
