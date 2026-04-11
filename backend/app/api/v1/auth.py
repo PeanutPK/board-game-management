@@ -13,7 +13,7 @@ from app.core.config import settings
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=Token)
 def register(user: UserCreate, db: Session = Depends(get_db)):
     """Register a new user."""
     # Check if user exists
@@ -33,7 +33,19 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(db_user.id)}, expires_delta=access_token_expires
+    )
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "username": db_user.username,
+        "user_role": (
+            "admin" if db_user.is_admin else "staff" if db_user.is_staff else "user"
+        ),
+    }
 
 
 @router.post("/login", response_model=Token)
@@ -59,3 +71,9 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
             "admin" if db_user.is_admin else "staff" if db_user.is_staff else "user"
         ),
     }
+
+
+@router.get("/users", response_model=list[UserResponse])
+def get_users(db: Session = Depends(get_db)):
+    """Get all users."""
+    return db.query(User).all()

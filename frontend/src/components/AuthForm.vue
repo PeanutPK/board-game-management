@@ -153,7 +153,7 @@ const handleSubmit = async () => {
       userStore.setToken(response.access_token)
       userStore.setRole(response.user_role)
       userStore.setUsername(response.username)
-      router.push('/dashboard')
+      router.push('/')
     }
   } catch (error) {
     console.error('Authentication error:', error)
