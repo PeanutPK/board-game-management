@@ -1,6 +1,6 @@
 """Game model and related database operations."""
 
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -27,6 +27,7 @@ class Game(Base):
     bookings = relationship("Booking", back_populates="game")
     orders = relationship("Order", back_populates="game")
     images = relationship("GameImage", back_populates="game")
+    reviews = relationship("UserReview", back_populates="game")
 
 
 class GameImage(Base):
@@ -35,7 +36,7 @@ class GameImage(Base):
     __tablename__ = "game_images"
 
     id = Column(Integer, primary_key=True, index=True)
-    game_id = Column(Integer, index=True)
+    game_id = Column(Integer, ForeignKey("games.id"), index=True)
     url = Column(String)
 
     # Relationships
