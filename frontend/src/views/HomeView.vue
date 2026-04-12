@@ -1,11 +1,11 @@
 <template>
-  <section class="hero">
-    <div class="left-hero">
-      <img :src="generatedLogo" alt="Board Game Management logo" class="hero-logo" />
+  <section class="home-view">
+    <div class="left-info">
+      <img :src="generatedLogo" alt="Board Game Management logo" class="info-logo" />
     </div>
-    <div class="right-hero">
+    <div class="right-info">
       <h1 v-if="getUsername()" class="text-cblack">
-        <div class="flex justify-center">
+        <div class="flex justify-center md:justify-start">
           Welcome&nbsp;
           <p class="text-cdarkslategray font-extrabold underline">
             {{ getUsername() }}
@@ -14,9 +14,9 @@
         to Board Game Management
       </h1>
       <h1 v-else class="text-cblack">Welcome Guest to Board Game Management</h1>
-      <p class="hero-subtitle">Browse, book, and order your favorite board games in one place.</p>
+      <p class="info-subtitle">Browse, book, and order your favorite board games in one place.</p>
 
-      <div class="hero-stats">
+      <div class="info-stats">
         <div class="stat-pill">
           <span class="stat-label">Games Listed</span>
           <strong>{{ gameStats.total }}</strong>
@@ -26,7 +26,7 @@
           <strong>{{ gameStats.available }}</strong>
         </div>
       </div>
-      <div class="hero-link">
+      <div class="info-link">
         <router-link to="/game" class="browse-link">
           <p>Start Browsing</p>
           <Icon icon="mdi:arrow-right" style="font-size: 24px; font-weight: bolder" />

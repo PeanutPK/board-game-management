@@ -2,7 +2,7 @@
   <section class="manage-view">
     <header class="page-head">
       <h1>Inventory Management</h1>
-      <p>Add board games and manage stock levels.</p>
+      <p>Manage board game catalog details, pricing, and stock in one place.</p>
     </header>
 
     <div v-if="!userStore.isLoggedIn" class="guard-card">
@@ -21,6 +21,21 @@
       <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
 
+      <section class="stats-grid">
+        <article class="stat-card shadow-md">
+          <h3>Total Games</h3>
+          <p>{{ games.length }}</p>
+        </article>
+        <article class="stat-card shadow-md">
+          <h3>Available</h3>
+          <p>{{ availableCount }}</p>
+        </article>
+        <article class="stat-card shadow-md">
+          <h3>Low Stock (&lt; 5)</h3>
+          <p>{{ lowStockCount }}</p>
+        </article>
+      </section>
+
       <div class="layout-grid">
         <ManageGameForm :key="gameFormKey" :submitting="isAddingGame" @submit="handleCreateGame" />
         <ManageStockTable
@@ -30,8 +45,16 @@
           @refresh="loadGames"
           @adjust-stock="handleAdjustStock"
           @set-stock="handleSetStock"
+          @edit-game="openEditModal"
         />
       </div>
+
+      <EditGameModal
+        v-model="isEditModalOpen"
+        :game="selectedGame"
+        :saving="isSavingGameEdit"
+        @submit="handleEditGame"
+      />
     </template>
   </section>
 </template>
@@ -40,8 +63,9 @@
 import '@/assets/manage.css'
 
 import { computed, onMounted, ref } from 'vue'
-import type { Game, GameCreate } from '@/api/games'
+import type { Game, GameCreate, GameUpdatePayload } from '@/api/games'
 import { createGame, getGames, updateGame } from '@/api/games'
+import EditGameModal from '@/components/manage/EditGameModal.vue'
 import ManageGameForm from '@/components/manage/GameForm.vue'
 import ManageStockTable from '@/components/manage/StockTable.vue'
 import { useUserStore } from '@/stores/counter'
@@ -53,6 +77,9 @@ const isLoadingGames = ref(false)
 const isAddingGame = ref(false)
 const updatingGameId = ref<number | null>(null)
 const gameFormKey = ref(0)
+const isEditModalOpen = ref(false)
+const isSavingGameEdit = ref(false)
+const selectedGame = ref<Game | null>(null)
 const errorMessage = ref('')
 const successMessage = ref('')
 
@@ -60,6 +87,9 @@ const canManage = computed(() => {
   const role = userStore.userRole
   return role === 'staff' || role === 'admin'
 })
+
+const availableCount = computed(() => games.value.filter((game) => game.is_available).length)
+const lowStockCount = computed(() => games.value.filter((game) => game.stock < 5).length)
 
 onMounted(async () => {
   if (canManage.value) {
@@ -121,7 +151,7 @@ async function handleSetStock(game: Game, stock: number) {
 async function persistStock(game: Game, stock: number) {
   updatingGameId.value = game.id
   try {
-    await updateGame(game.id, { stock })
+    await updateGame(game.id, { stock, is_available: stock > 0 })
     setSuccessMessage(`Stock updated for ${game.title}.`)
     await loadGames()
   } catch (error) {
@@ -129,6 +159,26 @@ async function persistStock(game: Game, stock: number) {
     setErrorMessage(`Failed to update stock for ${game.title}.`)
   } finally {
     updatingGameId.value = null
+  }
+}
+
+function openEditModal(game: Game) {
+  selectedGame.value = game
+  isEditModalOpen.value = true
+}
+
+async function handleEditGame(gameId: number, payload: GameUpdatePayload) {
+  isSavingGameEdit.value = true
+  try {
+    await updateGame(gameId, payload)
+    isEditModalOpen.value = false
+    setSuccessMessage('Game details updated successfully.')
+    await loadGames()
+  } catch (error) {
+    console.error('Failed to update game details:', error)
+    setErrorMessage('Failed to update game details. Please check the data and try again.')
+  } finally {
+    isSavingGameEdit.value = false
   }
 }
 </script>
