@@ -12,6 +12,11 @@ export interface Game {
   title: string
   description: string
   price: number
+  rent: number | null
+  min_players: number | null
+  max_players: number | null
+  average_playtime: number | null
+  recommended_age: number | null
   stock: number
   is_available: boolean
 }
@@ -20,7 +25,25 @@ export interface GameCreate {
   title: string
   description: string
   price: number
+  rent: number
+  min_players: number
+  max_players: number
+  average_playtime: number
+  recommended_age: number
   stock: number
+}
+
+export interface GameUpdatePayload {
+  title?: string
+  description?: string
+  price?: number
+  rent?: number
+  min_players?: number
+  max_players?: number
+  average_playtime?: number
+  recommended_age?: number
+  stock?: number
+  is_available?: boolean
 }
 
 function getHeaders() {
@@ -80,7 +103,7 @@ export async function createGame(game: GameCreate): Promise<Game> {
   return response.data
 }
 
-export async function updateGame(id: number, game: Partial<GameCreate>): Promise<Game> {
+export async function updateGame(id: number, game: GameUpdatePayload): Promise<Game> {
   const response = await api.put(`${API_URL}/games/${id}`, game, {
       headers: getHeaders(),
     })

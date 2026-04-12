@@ -24,6 +24,11 @@ class GameUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
+    rent: Optional[float] = None
+    min_players: Optional[int] = None
+    max_players: Optional[int] = None
+    average_playtime: Optional[int] = None
+    recommended_age: Optional[int] = None
     stock: Optional[int] = None
     is_available: Optional[bool] = None
 
@@ -35,5 +40,10 @@ class GameResponse(BaseModel):
     title: str
     description: str
     price: float
+    rent: Optional[float] = None
+    min_players: Optional[int] = None
+    max_players: Optional[int] = None
+    average_playtime: Optional[int] = None
+    recommended_age: Optional[int] = None
     stock: int
     is_available: bool
