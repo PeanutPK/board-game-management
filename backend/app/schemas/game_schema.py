@@ -11,6 +11,7 @@ class GameCreate(BaseModel):
     description: str
     price: float
     rent: float
+    average_rating: Optional[float] = None
     min_players: int
     max_players: int
     average_playtime: int
@@ -25,6 +26,7 @@ class GameUpdate(BaseModel):
     description: Optional[str] = None
     price: Optional[float] = None
     rent: Optional[float] = None
+    average_rating: Optional[float] = None
     min_players: Optional[int] = None
     max_players: Optional[int] = None
     average_playtime: Optional[int] = None
@@ -41,6 +43,7 @@ class GameResponse(BaseModel):
     description: str
     price: float
     rent: Optional[float] = None
+    average_rating: Optional[float] = None
     min_players: Optional[int] = None
     max_players: Optional[int] = None
     average_playtime: Optional[int] = None

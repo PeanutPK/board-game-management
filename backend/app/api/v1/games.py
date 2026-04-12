@@ -21,6 +21,15 @@ def get_games(
     return GameService.get_all_games(db, skip=skip, limit=limit, available_only=available_only)
 
 
+@router.get("/trending", response_model=list[GameResponse])
+def get_trending_games(
+    limit: int = Query(4, ge=1, le=12),
+    db: Session = Depends(get_db),
+):
+    """Get the highest rated games for the trending section."""
+    return GameService.get_trending_games(db, limit=limit)
+
+
 @router.get("/stats", response_model=dict[str, int])
 def get_game_stats(db: Session = Depends(get_db)):
     """Get game statistics."""

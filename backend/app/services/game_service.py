@@ -1,5 +1,6 @@
 """Game business logic and interactions with the database focus on stock checking."""
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -47,13 +48,25 @@ class GameService:
         return query.all()
 
     @staticmethod
+    def get_trending_games(db: Session, limit: int = 4) -> list[Game]:
+        """Get the highest rated games."""
+        return (
+            db.query(Game)
+            .order_by(func.coalesce(Game.average_rating, 0).desc(), Game.price.desc())
+            .limit(limit)
+            .all()
+        )
+
+    @staticmethod
     def create_game(db: Session, game: GameCreate) -> Game:
         """Create a new game."""
+        average_rating = game.average_rating if game.average_rating is not None else game.price
         db_game = Game(
             title=game.title,
             description=game.description,
             price=game.price,
             rent=game.rent,
+            average_rating=average_rating,
             min_players=game.min_players,
             max_players=game.max_players,
             average_playtime=game.average_playtime,
@@ -77,6 +90,9 @@ class GameService:
 
         if "stock" in update_data and "is_available" not in update_data:
             db_game.is_available = db_game.stock > 0
+
+        if "average_rating" not in update_data and db_game.average_rating is None:
+            db_game.average_rating = db_game.price
 
         db.add(db_game)
         db.commit()

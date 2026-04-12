@@ -16,6 +16,7 @@ class Game(Base):
     description = Column(String)
     price = Column(Float)
     rent = Column(Float)
+    average_rating = Column(Float)
     min_players = Column(Integer)
     max_players = Column(Integer)
     average_playtime = Column(Integer)

@@ -13,6 +13,7 @@ export interface Game {
   description: string
   price: number
   rent: number | null
+  average_rating: number | null
   min_players: number | null
   max_players: number | null
   average_playtime: number | null
@@ -77,6 +78,14 @@ export async function getGameStats(): Promise<{ total: number; available: number
     .catch(function (error) {
       throw new Error('Failed to fetch game stats', error)
     })
+
+  return response.data
+}
+
+export async function getTrendingGames(limit: number = 4): Promise<Game[]> {
+  const response = await api.get(`${API_URL}/games/trending?limit=${limit}`, {
+    headers: getHeaders(),
+  })
 
   return response.data
 }

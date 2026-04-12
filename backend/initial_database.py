@@ -77,6 +77,15 @@ def _parse_int(value: str | None, default: int = 0) -> int:
         return default
 
 
+def _ensure_average_rating_column() -> None:
+    """Add the average_rating column when upgrading an existing SQLite database."""
+    with engine.begin() as connection:
+        columns = connection.exec_driver_sql("PRAGMA table_info(games)").fetchall()
+        column_names = {column[1] for column in columns}
+        if "average_rating" not in column_names:
+            connection.exec_driver_sql("ALTER TABLE games ADD COLUMN average_rating FLOAT")
+
+
 def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
     """Seed games using rows from CSV and set rent to one-third of price."""
     if not csv_path.exists():
@@ -101,9 +110,10 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
                 description = (row.get("Description") or "").strip() or "No description provided"
 
                 # CSV has no explicit price field, so AvgRating is used as actual price.
-                price = _parse_float(row.get("AvgRating"), 0.0)
+                average_rating = _parse_float(row.get("AvgRating"), 0.0)
+                price = average_rating
                 if price <= 0:
-                    price = _parse_float(row.get("BayesAvgRating"), 0.0) * 100
+                    price = _parse_float(row.get("BayesAvgRating"), 0.0)
                 if price <= 0:
                     skipped += 1
                     continue
@@ -132,6 +142,7 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
                 game.description = description
                 game.price = price
                 game.rent = rent
+                game.average_rating = average_rating
                 game.min_players = min_players
                 game.max_players = max_players
                 game.average_playtime = average_playtime
@@ -170,6 +181,7 @@ def main() -> None:
 
     # Ensure tables exist before attempting inserts/updates.
     Base.metadata.create_all(bind=engine)
+    _ensure_average_rating_column()
 
     admin_result = upsert_user(
         email=admin_email,
