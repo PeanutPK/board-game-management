@@ -4,16 +4,16 @@
       <img :src="generatedLogo" alt="Board Game Management logo" class="hero-logo" />
     </div>
     <div class="right-hero">
-      <h1 class="text-cblack">
-        <div class="flex">
+      <h1 v-if="getUsername()" class="text-cblack">
+        <div class="flex justify-center">
           Welcome&nbsp;
-          <p v-if="getUsername()" class="text-cdarkslategray font-extrabold underline">
+          <p class="text-cdarkslategray font-extrabold underline">
             {{ getUsername() }}
           </p>
-          &nbsp;
         </div>
         to Board Game Management
       </h1>
+      <h1 v-else class="text-cblack">Welcome Guest to Board Game Management</h1>
       <p class="hero-subtitle">Browse, book, and order your favorite board games in one place.</p>
 
       <div class="hero-stats">
