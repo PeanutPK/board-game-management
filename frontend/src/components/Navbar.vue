@@ -61,11 +61,13 @@ defineOptions({
 
 // import generatedLogo from '../assets/generatedLogo.png'
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { logout as logoutUser } from '../api/auth'
 import { useUserStore } from '../stores/counter'
 
 const userStore = useUserStore()
 const isLoggedIn = computed(() => userStore.isLoggedIn)
+const router = useRouter()
 const isMobileMenuOpen = ref(false)
 const isStaffOrAdmin = computed(() => {
   const role = userStore.userRole
@@ -84,7 +86,7 @@ function handleLogout() {
   logoutUser()
   userStore.logout()
   closeMobileMenu()
-  window.location.href = '/'
+  router.push('/auth')
 }
 </script>
 
