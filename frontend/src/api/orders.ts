@@ -2,7 +2,7 @@
  * Orders API client
  */
 
-import axios from 'axios'
+import api from './axios'
 import { getToken } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -30,7 +30,7 @@ function getHeaders() {
 }
 
 export async function createOrder(order: OrderCreate): Promise<Order> {
-  const response = await axios
+  const response = await api
     .post(`${API_URL}/orders/`, order, {
       headers: getHeaders(),
     })
@@ -42,7 +42,7 @@ export async function createOrder(order: OrderCreate): Promise<Order> {
 }
 
 export async function getMyOrders(): Promise<Order[]> {
-  const response = await axios
+  const response = await api
     .get(`${API_URL}/orders/`, {
       headers: getHeaders(),
     })
@@ -54,7 +54,7 @@ export async function getMyOrders(): Promise<Order[]> {
 }
 
 export async function cancelOrder(orderId: number): Promise<Order> {
-  const response = await axios
+  const response = await api
     .post(
       `${API_URL}/orders/${orderId}/cancel`,
       {},

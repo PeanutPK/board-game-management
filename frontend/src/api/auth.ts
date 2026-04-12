@@ -1,7 +1,7 @@
 /**
  * Authentication API client
  */
-import axios from 'axios'
+import api from './axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
@@ -24,12 +24,12 @@ export interface TokenResponse {
 }
 
 export async function register(data: UserRegister): Promise<TokenResponse> {
-  const response = await axios.post(`${API_URL}/auth/register`, data)
+  const response = await api.post(`${API_URL}/auth/register`, data)
   return response.data
 }
 
 export async function login(credentials: UserLogin): Promise<TokenResponse> {
-  const response = await axios.post(`${API_URL}/auth/login`, credentials)
+  const response = await api.post(`${API_URL}/auth/login`, credentials)
   return response.data
 }
 

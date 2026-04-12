@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+function hasManageAccess(): boolean {
+  const role = localStorage.getItem('user_role')
+  return role === 'staff' || role === 'admin'
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -42,13 +47,24 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('../views/AdminView.vue'),
+      meta: { requiresManageAccess: true },
     },
     {
       path: '/manage',
       name: 'manage',
       component: () => import('../views/ManageView.vue'),
-    }
+      meta: { requiresManageAccess: true },
+    },
   ],
+})
+
+router.beforeEach((to, _from, next) => {
+  if (to.meta.requiresManageAccess && !hasManageAccess()) {
+    next({ path: '/auth' })
+    return
+  }
+
+  next()
 })
 
 export default router

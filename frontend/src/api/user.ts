@@ -1,7 +1,7 @@
 /**
  * User management API
  */
-import axios from 'axios'
+import api from './axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
@@ -35,7 +35,7 @@ export async function getUserProfiles(): Promise<User[]> {
     throw new Error('No access token found')
   }
 
-  const response = await axios.get(`${API_URL}/users`, {
+  const response = await api.get(`${API_URL}/users`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -49,7 +49,7 @@ export async function createUser(data: UserCreateInput): Promise<User> {
     throw new Error('No access token found')
   }
 
-  const response = await axios.post(`${API_URL}/users`, data, {
+  const response = await api.post(`${API_URL}/users`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -63,7 +63,7 @@ export async function updateUser(userId: number, data: UserUpdateInput): Promise
     throw new Error('No access token found')
   }
 
-  const response = await axios.put(`${API_URL}/users/${userId}`, data, {
+  const response = await api.put(`${API_URL}/users/${userId}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -77,7 +77,7 @@ export async function deleteUser(userId: number): Promise<void> {
     throw new Error('No access token found')
   }
 
-  await axios.delete(`${API_URL}/users/${userId}`, {
+  await api.delete(`${API_URL}/users/${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

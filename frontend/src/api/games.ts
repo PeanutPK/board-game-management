@@ -2,7 +2,7 @@
  * Games API client
  */
 
-import axios from 'axios'
+import api from './axios'
 import { getToken } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -31,8 +31,12 @@ function getHeaders() {
   }
 }
 
-export async function getGames(skip: number = 0, limit: number = 10, available_only: boolean = false): Promise<Game[]> {
-  const response = await axios
+export async function getGames(
+  skip: number = 0,
+  limit: number = 10,
+  available_only: boolean = false,
+): Promise<Game[]> {
+  const response = await api
     .get(`${API_URL}/games/?skip=${skip}&limit=${limit}&available_only=${available_only}`, {
       headers: getHeaders(),
     })
@@ -44,8 +48,7 @@ export async function getGames(skip: number = 0, limit: number = 10, available_o
 }
 
 export async function getGameStats(): Promise<{ total: number; available: number }> {
-  const response = await axios
-    .get(`${API_URL}/games/stats`, {
+  const response = await api.get(`${API_URL}/games/stats`, {
       headers: getHeaders(),
     })
     .catch(function (error) {
@@ -56,8 +59,7 @@ export async function getGameStats(): Promise<{ total: number; available: number
 }
 
 export async function getGame(id: number): Promise<Game> {
-  const response = await axios
-    .get(`${API_URL}/games/${id}`, {
+  const response = await api.get(`${API_URL}/games/${id}`, {
       headers: getHeaders(),
     })
     .catch(function (error) {
@@ -68,8 +70,7 @@ export async function getGame(id: number): Promise<Game> {
 }
 
 export async function createGame(game: GameCreate): Promise<Game> {
-  const response = await axios
-    .post(`${API_URL}/games/`, game, {
+  const response = await api.post(`${API_URL}/games/`, game, {
       headers: getHeaders(),
     })
     .catch(function (error) {
@@ -80,8 +81,7 @@ export async function createGame(game: GameCreate): Promise<Game> {
 }
 
 export async function updateGame(id: number, game: Partial<GameCreate>): Promise<Game> {
-  const response = await axios
-    .put(`${API_URL}/games/${id}`, game, {
+  const response = await api.put(`${API_URL}/games/${id}`, game, {
       headers: getHeaders(),
     })
     .catch(function (error) {
@@ -92,8 +92,7 @@ export async function updateGame(id: number, game: Partial<GameCreate>): Promise
 }
 
 export async function deleteGame(id: number): Promise<void> {
-  const response = await axios
-    .delete(`${API_URL}/games/${id}`, {
+  const response = await api.delete(`${API_URL}/games/${id}`, {
       headers: getHeaders(),
     })
     .catch(function (error) {

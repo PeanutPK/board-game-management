@@ -1,4 +1,4 @@
-import axios from 'axios'
+import api from './axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
@@ -8,6 +8,6 @@ export interface StatusResponse {
 }
 
 export async function getStatus(): Promise<StatusResponse> {
-  const response = await axios.get(`${API_URL}/health`)
+  const response = await api.get(`${API_URL}/health`)
   return response.data
 }
