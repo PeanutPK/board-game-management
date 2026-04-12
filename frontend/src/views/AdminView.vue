@@ -1,12 +1,11 @@
 <template>
-  <div class="admin-view">
-    <section class="admin-hero shadow-md">
+  <div class="view">
+    <section class="view-hero shadow-md">
       <div>
         <p class="eyebrow">Admin</p>
         <h1>User Management</h1>
         <p class="subtext">Create accounts, adjust roles, and remove users from one place.</p>
       </div>
-      <button class="action-btn secondary" type="button" @click="loadUsers">Refresh</button>
     </section>
 
     <AdminUserForm
@@ -22,6 +21,7 @@
     <AdminUserTable
       :users="users"
       :is-loading="isLoading"
+      @refresh="loadUsers"
       @edit="startEdit"
       @delete="handleDelete"
     />
@@ -95,6 +95,7 @@ function startEdit(user: User) {
 async function loadUsers() {
   isLoading.value = true
   setFeedback('')
+
   try {
     users.value = await getUserProfiles()
   } catch (error) {

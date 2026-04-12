@@ -1,10 +1,14 @@
 <template>
-  <section class="admin-panel shadow-md">
+  <section class="view-panel shadow-md">
     <div class="panel-header">
       <div>
         <h2>Users</h2>
         <p>{{ users.length }} account{{ users.length === 1 ? '' : 's' }} found</p>
       </div>
+
+      <button class="action-btn secondary" type="button" :disabled="isLoading" @click="$emit('refresh')">
+        Refresh
+      </button>
     </div>
 
     <div v-if="isLoading" class="empty-state">Loading users...</div>
@@ -52,6 +56,7 @@ defineProps<{
 defineEmits<{
   edit: [user: User]
   delete: [user: User]
+  refresh: []
 }>()
 
 function getRoleLabel(user: User): string {

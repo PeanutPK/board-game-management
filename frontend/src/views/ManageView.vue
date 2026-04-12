@@ -1,9 +1,12 @@
 <template>
-  <section class="manage-view">
-    <header class="page-head">
-      <h1>Inventory Management</h1>
-      <p>Manage board game catalog details, pricing, and stock in one place.</p>
-    </header>
+  <section class="view">
+    <section class="view-hero shadow-md">
+      <div>
+        <p class="eyebrow">Manager</p>
+        <h1>Inventory Management</h1>
+        <p class="subtext">Manage board game inventory, pricing, and stock levels.</p>
+      </div>
+    </section>
 
     <div v-if="!userStore.isLoggedIn" class="guard-card">
       <h2>Login Required</h2>

@@ -3,7 +3,6 @@
     <section class="modal-panel shadow-md">
       <div class="modal-header">
         <h2>Edit Game</h2>
-        <button type="button" class="icon-btn" @click="emit('update:modelValue', false)">x</button>
       </div>
 
       <form class="form-grid" @submit.prevent="submitEdit">
@@ -58,8 +57,8 @@
         </label>
 
         <div class="actions field-full">
-          <button type="button" class="btn ghost" @click="emit('update:modelValue', false)">Cancel</button>
-          <button type="submit" class="btn set-stock" :disabled="saving">
+          <button type="button" class="action-btn secondary" @click="emit('update:modelValue', false)">Cancel</button>
+          <button type="submit" class="action-btn primary" :disabled="saving">
             {{ saving ? 'Saving...' : 'Save Changes' }}
           </button>
         </div>

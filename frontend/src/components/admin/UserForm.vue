@@ -1,5 +1,5 @@
 <template>
-  <section class="admin-panel shadow-md">
+  <section class="view-panel shadow-md">
     <div class="panel-header">
       <div>
         <h2>{{ editingUserId ? 'Edit user' : 'Add user' }}</h2>
