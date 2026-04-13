@@ -118,7 +118,7 @@ def update_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already exists",
             )
-        db_user.email = user_update.email
+        setattr(db_user, "email", user_update.email)
 
     if user_update.username and user_update.username != db_user.username:
         existing_username = (
@@ -129,16 +129,16 @@ def update_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already exists",
             )
-        db_user.username = user_update.username
+        setattr(db_user, "username", user_update.username)
 
     if user_update.password:
-        db_user.hashed_password = get_password_hash(user_update.password)
+        setattr(db_user, "hashed_password", get_password_hash(user_update.password))
 
     if user_update.is_staff is not None:
-        db_user.is_staff = user_update.is_staff
+        setattr(db_user, "is_staff", user_update.is_staff)
 
     if user_update.is_admin is not None:
-        db_user.is_admin = user_update.is_admin
+        setattr(db_user, "is_admin", user_update.is_admin)
 
     db.commit()
     db.refresh(db_user)

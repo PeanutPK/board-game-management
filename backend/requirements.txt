@@ -3,8 +3,10 @@ uvicorn
 sqlalchemy
 pydantic[email]
 pydantic-settings
-python-jose[cryptography]
+types-python-jose
+python-jose
 passlib==1.7.4
+types-passlib
 bcrypt==3.2.2
 python-multipart
 alembic

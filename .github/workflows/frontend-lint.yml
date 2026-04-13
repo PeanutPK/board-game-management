@@ -1,4 +1,4 @@
-name: frontend linter
+name: frontend lint
 
 on: [push, pull_request]
 

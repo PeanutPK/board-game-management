@@ -1,5 +1,7 @@
 """Game business logic and interactions with the database focus on stock checking."""
 
+from typing import Any, cast
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -91,10 +93,14 @@ class GameService:
             setattr(db_game, field, value)
 
         if "stock" in update_data and "is_available" not in update_data:
-            db_game.is_available = db_game.stock > 0
+            stock_value = cast(int, update_data["stock"])
+            setattr(db_game, "is_available", stock_value > 0)
 
-        if "average_rating" not in update_data and db_game.average_rating is None:
-            db_game.average_rating = db_game.price
+        if (
+            "average_rating" not in update_data
+            and cast(Any, db_game).average_rating is None
+        ):
+            setattr(db_game, "average_rating", cast(Any, db_game).price)
 
         db.add(db_game)
         db.commit()
@@ -113,4 +119,4 @@ class GameService:
     def check_stock(db: Session, game_id: int, quantity: int) -> bool:
         """Check if game has enough stock."""
         game = GameService.get_game(db, game_id)
-        return game.stock >= quantity
+        return bool(cast(Any, game).stock >= quantity)

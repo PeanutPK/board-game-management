@@ -44,7 +44,7 @@ class BookingService:
         if not booking:
             raise HTTPException(status_code=404, detail="Booking not found")
 
-        booking.is_active = False
+        setattr(booking, "is_active", False)
         db.add(booking)
         db.commit()
         db.refresh(booking)

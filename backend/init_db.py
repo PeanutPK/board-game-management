@@ -6,6 +6,7 @@ python initial_database.py
 
 import csv
 from pathlib import Path
+from typing import Any
 
 from app.core.security import get_password_hash
 from app.db.session import Base, SessionLocal, engine
@@ -47,11 +48,11 @@ def upsert_user(
             db.commit()
             return f"Created user '{username}' ({email})"
 
-        user.email = email
-        user.username = username
-        user.hashed_password = hashed_password
-        user.is_admin = is_admin
-        user.is_staff = is_staff
+        setattr(user, "email", email)
+        setattr(user, "username", username)
+        setattr(user, "hashed_password", hashed_password)
+        setattr(user, "is_admin", is_admin)
+        setattr(user, "is_staff", is_staff)
         db.commit()
         return f"Updated user '{username}' ({email})"
     finally:
@@ -97,7 +98,9 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
     skipped = 0
 
     try:
-        existing_games = {game.title: game for game in db.query(Game).all()}
+        existing_games: dict[str, Game] = {
+            str(game.title): game for game in db.query(Game).all()
+        }
 
         with path.open(encoding="utf-8") as file:
             reader = csv.DictReader(file)
@@ -145,16 +148,17 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
                 else:
                     updated += 1
 
-                game.description = desc
-                game.price = price
-                game.rent = rent
-                game.average_rating = avg_rating
-                game.min_players = min_players
-                game.max_players = max_players
-                game.average_playtime = avg_playtime
-                game.recommended_age = recommended_age
-                game.stock = stock
-                game.is_available = stock > 0
+                typed_game = game
+                setattr(typed_game, "description", desc)
+                setattr(typed_game, "price", price)
+                setattr(typed_game, "rent", rent)
+                setattr(typed_game, "average_rating", avg_rating)
+                setattr(typed_game, "min_players", min_players)
+                setattr(typed_game, "max_players", max_players)
+                setattr(typed_game, "average_playtime", avg_playtime)
+                setattr(typed_game, "recommended_age", recommended_age)
+                setattr(typed_game, "stock", stock)
+                setattr(typed_game, "is_available", stock > 0)
 
         db.commit()
         return created, updated, skipped

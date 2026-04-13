@@ -1,5 +1,7 @@
 """Order business logic and interactions with the database focus on stock updates and payment simulation."""
 
+from typing import Any, cast
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -52,11 +54,15 @@ class OrderService:
     def complete_order(db: Session, order_id: int) -> Order:
         """Mark an order as completed (after payment)."""
         order = OrderService.get_order(db, order_id)
-        order.status = "completed"
+        setattr(order, "status", "completed")
 
         # Deduct from stock
-        game = GameService.get_game(db, order.game_id)
-        game.stock -= order.quantity
+        game = GameService.get_game(db, cast(int, cast(Any, order).game_id))
+        setattr(
+            game,
+            "stock",
+            cast(int, cast(Any, game).stock) - cast(int, cast(Any, order).quantity),
+        )
 
         db.add(order)
         db.add(game)

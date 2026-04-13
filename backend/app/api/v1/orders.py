@@ -18,10 +18,13 @@ def get_current_user_id(authorization: str = Header(None)) -> int:
 
     token = authorization.replace("Bearer ", "")
     payload = decode_access_token(token)
-    if not payload:
+    if not isinstance(payload, dict):
         raise HTTPException(status_code=401, detail="Invalid token")
+    sub = payload.get("sub")
+    if sub is None:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
 
-    return int(payload.get("sub"))
+    return int(sub)
 
 
 @router.post("/", response_model=OrderResponse)

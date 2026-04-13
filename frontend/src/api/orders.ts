@@ -19,6 +19,7 @@ export interface Order {
 
 export interface OrderCreate {
   game_id: number
+  quantity?: number
 }
 
 function getHeaders() {
@@ -64,6 +65,22 @@ export async function cancelOrder(orderId: number): Promise<Order> {
     )
     .catch(function (error) {
       throw new Error('Failed to cancel order:', error)
+    })
+
+  return response.data
+}
+
+export async function completeOrder(orderId: number): Promise<Order> {
+  const response = await api
+    .post(
+      `${API_URL}/orders/${orderId}/complete`,
+      {},
+      {
+        headers: getHeaders(),
+      },
+    )
+    .catch(function (error) {
+      throw new Error('Failed to complete order:', error)
     })
 
   return response.data
