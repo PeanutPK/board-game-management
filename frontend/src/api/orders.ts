@@ -2,7 +2,7 @@
  * Orders API client
  */
 
-import axios from 'axios'
+import api from './axios'
 import { getToken } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -19,6 +19,7 @@ export interface Order {
 
 export interface OrderCreate {
   game_id: number
+  quantity?: number
 }
 
 function getHeaders() {
@@ -30,31 +31,31 @@ function getHeaders() {
 }
 
 export async function createOrder(order: OrderCreate): Promise<Order> {
-  const response = await axios
+  const response = await api
     .post(`${API_URL}/orders/`, order, {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to create order')
+      throw new Error('Failed to create order:', error)
     })
 
   return response.data
 }
 
 export async function getMyOrders(): Promise<Order[]> {
-  const response = await axios
+  const response = await api
     .get(`${API_URL}/orders/`, {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to fetch orders')
+      throw new Error('Failed to fetch orders:', error)
     })
 
   return response.data
 }
 
 export async function cancelOrder(orderId: number): Promise<Order> {
-  const response = await axios
+  const response = await api
     .post(
       `${API_URL}/orders/${orderId}/cancel`,
       {},
@@ -63,7 +64,23 @@ export async function cancelOrder(orderId: number): Promise<Order> {
       },
     )
     .catch(function (error) {
-      throw new Error('Failed to cancel order')
+      throw new Error('Failed to cancel order:', error)
+    })
+
+  return response.data
+}
+
+export async function completeOrder(orderId: number): Promise<Order> {
+  const response = await api
+    .post(
+      `${API_URL}/orders/${orderId}/complete`,
+      {},
+      {
+        headers: getHeaders(),
+      },
+    )
+    .catch(function (error) {
+      throw new Error('Failed to complete order:', error)
     })
 
   return response.data

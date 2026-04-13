@@ -1,17 +1,24 @@
 """Main application setup and entry point for the board game management system."""
+
 # uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.db.session import Base, engine
-from app.api.v1 import auth, games, bookings, orders
+from app.api.v1 import auth, games, bookings, orders, users
 
 # Create tables
 Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
-app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION, description="API for managing board games, bookings, and orders.", docs_url=f"{settings.API_V_STR}/docs", redoc_url=f"{settings.API_V_STR}/redoc")
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.PROJECT_VERSION,
+    description="API for managing board games, bookings, and orders.",
+    docs_url=f"{settings.API_V_STR}/docs",
+    redoc_url=f"{settings.API_V_STR}/redoc",
+)
 
 # Add CORS middleware
 app.add_middleware(
@@ -24,6 +31,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix=settings.API_V_STR)
+app.include_router(users.router, prefix=settings.API_V_STR)
 app.include_router(games.router, prefix=settings.API_V_STR)
 app.include_router(bookings.router, prefix=settings.API_V_STR)
 app.include_router(orders.router, prefix=settings.API_V_STR)
