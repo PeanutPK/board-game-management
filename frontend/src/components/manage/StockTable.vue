@@ -2,7 +2,12 @@
   <section class="manage-card shadow-md">
     <div class="header-row">
       <h2 class="title">Manage Stock</h2>
-      <button type="button" class="action-btn secondary" :disabled="loading" @click="$emit('refresh')">
+      <button
+        type="button"
+        class="action-btn secondary"
+        :disabled="loading"
+        @click="$emit('refresh')"
+      >
         {{ loading ? 'Refreshing...' : 'Refresh' }}
       </button>
     </div>

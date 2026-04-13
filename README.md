@@ -94,5 +94,6 @@ npm run lint:eslint     # auto fix using eslint
 Make sure to set directory at `/backend`
 
 ```bash
-black                   # run black formatter
+black --check .         # check using black formatter
+black .                 # run black formatter
 ```

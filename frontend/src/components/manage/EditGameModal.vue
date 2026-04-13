@@ -33,7 +33,13 @@
 
         <label class="field">
           <span>Max Players</span>
-          <input v-model.number="form.max_players" type="number" :min="form.min_players || 1" step="1" required />
+          <input
+            v-model.number="form.max_players"
+            type="number"
+            :min="form.min_players || 1"
+            step="1"
+            required
+          />
         </label>
 
         <label class="field">
@@ -57,7 +63,13 @@
         </label>
 
         <div class="actions field-full">
-          <button type="button" class="action-btn secondary" @click="emit('update:modelValue', false)">Cancel</button>
+          <button
+            type="button"
+            class="action-btn secondary"
+            @click="emit('update:modelValue', false)"
+          >
+            Cancel
+          </button>
           <button type="submit" class="action-btn primary" :disabled="saving">
             {{ saving ? 'Saving...' : 'Save Changes' }}
           </button>

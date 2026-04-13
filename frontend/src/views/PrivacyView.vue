@@ -6,9 +6,9 @@
     <section class="mb-6">
       <h2 class="text-xl font-semibold mb-2">1. Introduction</h2>
       <p>
-        Welcome to <strong>Board Game Management System</strong>. We are committed to protecting your personal
-        information and your right to privacy. This policy applies to all information collected
-        through our Board Game Management System.
+        Welcome to <strong>Board Game Management System</strong>. We are committed to protecting
+        your personal information and your right to privacy. This policy applies to all information
+        collected through our Board Game Management System.
       </p>
     </section>
 
@@ -59,8 +59,8 @@
       <p>
         We do not sell, trade, or otherwise transfer your personally identifiable information to
         outside parties. Your data is only accessible to authorized
-        <strong>Board Game Management System</strong> administrators and staff members for the purpose of managing store
-        operations.
+        <strong>Board Game Management System</strong> administrators and staff members for the
+        purpose of managing store operations.
       </p>
     </section>
 

@@ -83,7 +83,9 @@ def _ensure_average_rating_column() -> None:
         columns = connection.exec_driver_sql("PRAGMA table_info(games)").fetchall()
         column_names = {column[1] for column in columns}
         if "average_rating" not in column_names:
-            connection.exec_driver_sql("ALTER TABLE games ADD COLUMN average_rating FLOAT")
+            connection.exec_driver_sql(
+                "ALTER TABLE games ADD COLUMN average_rating FLOAT"
+            )
 
 
 def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
@@ -99,7 +101,9 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
     try:
         existing_games = {game.title: game for game in db.query(Game).all()}
 
-        with csv_path.open("r", encoding="utf-8", errors="replace", newline="") as csv_file:
+        with csv_path.open(
+            "r", encoding="utf-8", errors="replace", newline=""
+        ) as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
                 title = (row.get("Name") or "").strip()
@@ -107,7 +111,9 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
                     skipped += 1
                     continue
 
-                description = (row.get("Description") or "").strip() or "No description provided"
+                description = (
+                    row.get("Description") or ""
+                ).strip() or "No description provided"
 
                 # CSV has no explicit price field, so AvgRating is used as actual price.
                 average_rating = _parse_float(row.get("AvgRating"), 0.0)
@@ -120,7 +126,9 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
 
                 rent = round(price / 3, 2)
                 min_players = max(1, _parse_int(row.get("MinPlayers"), 1))
-                max_players = max(min_players, _parse_int(row.get("MaxPlayers"), min_players))
+                max_players = max(
+                    min_players, _parse_int(row.get("MaxPlayers"), min_players)
+                )
                 average_playtime = max(0, _parse_int(row.get("MfgPlaytime"), 0))
 
                 recommended_age = _parse_int(row.get("MfgAgeRec"), 0)
@@ -198,7 +206,9 @@ def main() -> None:
         is_staff=True,
     )
 
-    games_csv_path = Path(__file__).resolve().parent / "app" / "db" / "initial_data" / "games.csv"
+    games_csv_path = (
+        Path(__file__).resolve().parent / "app" / "db" / "initial_data" / "games.csv"
+    )
     created_games, updated_games, skipped_games = seed_games_from_csv(games_csv_path)
 
     print(admin_result)

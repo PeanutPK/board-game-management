@@ -60,7 +60,9 @@ class GameService:
     @staticmethod
     def create_game(db: Session, game: GameCreate) -> Game:
         """Create a new game."""
-        average_rating = game.average_rating if game.average_rating is not None else game.price
+        average_rating = (
+            game.average_rating if game.average_rating is not None else game.price
+        )
         db_game = Game(
             title=game.title,
             description=game.description,

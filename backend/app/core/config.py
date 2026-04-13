@@ -10,6 +10,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
+
     # Application Version
     PROJECT_VERSION: str = os.getenv("PROJECT_VERSION", "0.1.0")
     # Database

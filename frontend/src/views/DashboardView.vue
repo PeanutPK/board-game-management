@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <h1>My Dashboard</h1>
-    
+
     <div v-if="!isLoggedIn" class="not-logged-in">
       <p>Please log in to view your dashboard</p>
       <router-link to="/" class="btn btn-primary">Go to Home</router-link>
@@ -22,9 +22,7 @@
               <p>Booked on: {{ formatDate(booking.booking_date) }}</p>
               <p v-if="booking.return_date">Return by: {{ formatDate(booking.return_date) }}</p>
             </div>
-            <button @click="handleReturnBooking(booking.id)" class="btn btn-danger">
-              Return
-            </button>
+            <button @click="handleReturnBooking(booking.id)" class="btn btn-danger">Return</button>
           </div>
         </div>
       </section>
@@ -46,7 +44,7 @@
                 {{ order.status.toUpperCase() }}
               </p>
             </div>
-            <button 
+            <button
               v-if="order.status === 'pending'"
               @click="handleCompleteOrder(order.id)"
               class="btn btn-success"
@@ -86,14 +84,14 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
 async function handleReturnBooking(bookingId: number) {
   try {
     await returnBooking(bookingId)
-    bookings.value = bookings.value.filter(b => b.id !== bookingId)
+    bookings.value = bookings.value.filter((b) => b.id !== bookingId)
   } catch (error) {
     console.error('Failed to return booking:', error)
   }

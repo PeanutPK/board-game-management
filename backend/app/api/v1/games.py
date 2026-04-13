@@ -18,7 +18,9 @@ def get_games(
     db: Session = Depends(get_db),
 ):
     """Get all games with pagination."""
-    return GameService.get_all_games(db, skip=skip, limit=limit, available_only=available_only)
+    return GameService.get_all_games(
+        db, skip=skip, limit=limit, available_only=available_only
+    )
 
 
 @router.get("/trending", response_model=list[GameResponse])

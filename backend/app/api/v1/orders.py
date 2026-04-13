@@ -1,4 +1,5 @@
 """API for ordering management and simulate payment process."""
+
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
@@ -14,12 +15,12 @@ def get_current_user_id(authorization: str = Header(None)) -> int:
     """Extract user ID from JWT token."""
     if not authorization:
         raise HTTPException(status_code=401, detail="Missing authorization header")
-    
+
     token = authorization.replace("Bearer ", "")
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
-    
+
     return int(payload.get("sub"))
 
 
@@ -27,7 +28,7 @@ def get_current_user_id(authorization: str = Header(None)) -> int:
 def create_order(
     order: OrderCreate,
     user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create a new order."""
     return OrderService.create_order(db, user_id, order)
@@ -35,8 +36,7 @@ def create_order(
 
 @router.get("/", response_model=list[OrderResponse])
 def get_my_orders(
-    user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)
 ):
     """Get all orders for the current user."""
     return OrderService.get_user_orders(db, user_id)
@@ -46,7 +46,7 @@ def get_my_orders(
 def get_order(
     order_id: int,
     user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get a specific order."""
     return OrderService.get_order(db, order_id)
@@ -56,7 +56,7 @@ def get_order(
 def complete_order(
     order_id: int,
     user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Complete an order (simulate payment)."""
     return OrderService.complete_order(db, order_id)

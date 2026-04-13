@@ -13,7 +13,9 @@
       </div>
     </div>
 
-    <div class="right-item w-full md:w-1/2 flex flex-col justify-center items-center text-cblack text-center p-8 gap-6">
+    <div
+      class="right-item w-full md:w-1/2 flex flex-col justify-center items-center text-cblack text-center p-8 gap-6"
+    >
       <AuthForm />
     </div>
   </div>

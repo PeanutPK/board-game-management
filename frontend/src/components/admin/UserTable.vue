@@ -6,7 +6,12 @@
         <p>{{ users.length }} account{{ users.length === 1 ? '' : 's' }} found</p>
       </div>
 
-      <button class="action-btn secondary" type="button" :disabled="isLoading" @click="$emit('refresh')">
+      <button
+        class="action-btn secondary"
+        type="button"
+        :disabled="isLoading"
+        @click="$emit('refresh')"
+      >
         Refresh
       </button>
     </div>

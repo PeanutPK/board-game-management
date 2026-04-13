@@ -27,7 +27,9 @@ def get_current_user(
     token = authorization.replace("Bearer ", "")
     payload = decode_access_token(token)
     if not payload:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
 
     user_id = payload.get("sub")
     if not user_id:
@@ -38,7 +40,9 @@ def get_current_user(
 
     user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
+        )
 
     return user
 
@@ -103,7 +107,9 @@ def update_user(
     """Update an existing user."""
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     if user_update.email and user_update.email != db_user.email:
         existing_email = db.query(User).filter(User.email == user_update.email).first()
@@ -115,7 +121,9 @@ def update_user(
         db_user.email = user_update.email
 
     if user_update.username and user_update.username != db_user.username:
-        existing_username = db.query(User).filter(User.username == user_update.username).first()
+        existing_username = (
+            db.query(User).filter(User.username == user_update.username).first()
+        )
         if existing_username:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -146,7 +154,9 @@ def delete_user(
     """Delete a user account."""
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     if db_user.id == current_user.id:
         raise HTTPException(

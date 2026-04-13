@@ -1,7 +1,9 @@
 <template>
   <section class="manage-card shadow-md">
     <h2 class="title">Add New Game</h2>
-    <p class="form-note">Create complete metadata for a board game. Rent defaults to one-third of price.</p>
+    <p class="form-note">
+      Create complete metadata for a board game. Rent defaults to one-third of price.
+    </p>
 
     <form class="form-grid" @submit.prevent="submitForm">
       <label class="field">
@@ -56,7 +58,9 @@
       </label>
 
       <div class="actions field-full">
-        <button type="submit" :disabled="submitting" class="action-btn primary">{{ submitting ? 'Adding...' : 'Add Game' }}</button>
+        <button type="submit" :disabled="submitting" class="action-btn primary">
+          {{ submitting ? 'Adding...' : 'Add Game' }}
+        </button>
       </div>
     </form>
   </section>
@@ -92,7 +96,12 @@ const computedRent = computed(() => {
 })
 
 function submitForm() {
-  if (form.price < 0 || form.stock < 0 || form.min_players < 1 || form.max_players < form.min_players) {
+  if (
+    form.price < 0 ||
+    form.stock < 0 ||
+    form.min_players < 1 ||
+    form.max_players < form.min_players
+  ) {
     return
   }
 
