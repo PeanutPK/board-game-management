@@ -41,7 +41,9 @@
       </section>
 
       <div class="layout-grid">
+        <div v-if="!isTableReady" class="loading-card">Preparing stock view...</div>
         <ManageStockTable
+          v-else
           :games="games"
           :loading="isLoadingGames"
           :updating-game-id="updatingGameId"
@@ -49,7 +51,7 @@
           :successMessage="successMessage"
           :search-query="searchQuery"
           :sort-by="sortBy"
-          :page-size="pageSize"
+          :page-size="resolvedPageSize"
           :current-page="currentPage"
           :total-pages="totalPages"
           :total-games="totalGames"
@@ -84,6 +86,7 @@
 
 <script setup lang="ts">
 import '@/assets/gamelist.css'
+import '@/assets/modal.css'
 import '@/assets/manage.css'
 
 import { computed, onMounted, ref } from 'vue'
@@ -107,14 +110,18 @@ const isSavingGameEdit = ref(false)
 const selectedGame = ref<Game | null>(null)
 const errorMessage = ref('')
 const successMessage = ref('')
+const pageSizeStorageKey = 'manage-stock-page-size'
 
 // Pagination and filtering state
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref<number | null>(null)
 const totalGames = ref(0)
 const totalPages = ref(1)
 const searchQuery = ref('')
 const sortBy = ref<'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock'>('title')
+
+const isTableReady = computed(() => pageSize.value !== null)
+const resolvedPageSize = computed(() => pageSize.value ?? 12)
 
 const canManage = computed(() => {
   const role = userStore.userRole
@@ -125,6 +132,7 @@ const availableCount = computed(() => games.value.filter((game) => game.is_avail
 const lowStockCount = computed(() => games.value.filter((game) => game.stock < 5).length)
 
 onMounted(async () => {
+  pageSize.value = readStoredPageSize(12)
   if (canManage.value) {
     await loadGames()
   }
@@ -145,12 +153,16 @@ async function loadGames() {
     return
   }
 
+  if (pageSize.value === null) {
+    return
+  }
+
   isLoadingGames.value = true
   try {
-    const skip = (currentPage.value - 1) * pageSize.value
+    const skip = (currentPage.value - 1) * resolvedPageSize.value
     const response: PaginatedGamesResponse = await getGames(
       skip,
-      pageSize.value,
+      resolvedPageSize.value,
       false,
       searchQuery.value,
       -1,
@@ -187,6 +199,7 @@ function handleSortChange(value: 'title' | 'price_asc' | 'price_desc' | 'rating'
 
 function handlePageSizeChange(value: number) {
   pageSize.value = value
+  window.localStorage.setItem(pageSizeStorageKey, String(value))
   resetToFirstPage()
 }
 
@@ -195,6 +208,13 @@ function goToPage(page: number) {
     currentPage.value = page
     loadGames()
   }
+}
+
+function readStoredPageSize(defaultValue: number): number {
+  const storedValue = window.localStorage.getItem(pageSizeStorageKey)
+  const parsedValue = storedValue ? Number(storedValue) : Number.NaN
+
+  return Number.isFinite(parsedValue) && parsedValue > 0 ? Math.floor(parsedValue) : defaultValue
 }
 
 async function handleCreateGame(payload: GameCreate) {

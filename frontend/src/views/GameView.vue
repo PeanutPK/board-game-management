@@ -17,7 +17,7 @@
       @update-index="currentTrendIndex = $event"
     />
 
-    <section class="list-section shadow-md">
+    <section v-if="isGameListReady" class="list-section shadow-md">
       <div class="section-head">
         <div class="panel-header">
           <div>
@@ -41,7 +41,11 @@
             <option value="price_desc">Sort by Price (High to Low)</option>
             <option value="stock">Sort by Stock</option>
           </select>
-          <select v-model.number="pageSize" class="page-size-select" @change="resetToFirstPage">
+          <select
+            v-model.number="pageSize"
+            class="page-size-select"
+            @change="handlePageSizeChange"
+          >
             <option :value="12">12 per page</option>
             <option :value="20">20 per page</option>
             <option :value="40">40 per page</option>
@@ -51,12 +55,12 @@
 
       <div v-if="loading" class="loading-card">Loading games...</div>
 
-      <div v-else-if="filteredGames.length === 0" class="empty-state">
+      <div v-else-if="games.length === 0" class="empty-state">
         <p>No games found</p>
       </div>
 
       <div v-else class="games-grid">
-        <article v-for="game in filteredGames" :key="game.id" class="game-card">
+        <article v-for="game in games" :key="game.id" class="game-card">
           <div class="game-header">
             <h3>{{ game.title }}</h3>
             <span :class="`availability ${game.is_available ? 'available' : 'unavailable'}`">
@@ -131,6 +135,10 @@
       </section>
     </section>
 
+    <section v-else class="list-section shadow-md">
+      <div class="loading-card">Preparing game list...</div>
+    </section>
+
     <div v-if="!isLoggedIn" class="login-required">
       <p>Please log in to rent or buy games</p>
       <router-link to="/" class="action-btn primary">Go to Home</router-link>
@@ -172,13 +180,15 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/shared-controls.css'
+import '@/assets/modal.css'
 import '@/assets/gamelist.css'
 
 import { computed, onMounted, ref, watch } from 'vue'
 import { getToken } from '../api/auth'
 import { createBooking } from '../api/bookings'
 import type { BookingCreate } from '../api/bookings'
-import { getGames, getTrendingGames, type Game, type PaginatedGamesResponse } from '../api/games'
+import { getGames, getTrendingGames, type Game } from '../api/games'
 import { createOrder } from '../api/orders'
 import TrendingCarousel from '../components/TrendingCarousel.vue'
 
@@ -189,8 +199,9 @@ const isLoggedIn = ref(!!getToken())
 const searchQuery = ref('')
 const sortBy = ref<'title' | 'rating' | 'price_asc' | 'price_desc' | 'stock'>('rating')
 const currentTrendIndex = ref(0)
+const gameListStorageKey = 'game-list-page-size'
 const currentPage = ref(1)
-const pageSize = ref(12)
+const pageSize = ref<number | null>(null)
 const totalGames = ref(0)
 const totalPages = ref(1)
 
@@ -208,9 +219,8 @@ const orderData = ref({
   quantity: 1,
 })
 
-const filteredGames = computed(() => {
-  return games.value
-})
+const isGameListReady = computed(() => pageSize.value !== null)
+const resolvedPageSize = computed(() => pageSize.value ?? 12)
 
 watch(trendingGames, (nextGames) => {
   if (nextGames.length === 0) {
@@ -224,6 +234,7 @@ watch(trendingGames, (nextGames) => {
 })
 
 onMounted(async () => {
+  pageSize.value = readStoredPageSize(12)
   await fetchGameData()
 })
 
@@ -310,6 +321,23 @@ function resetToFirstPage() {
   fetchGameData()
 }
 
+function readStoredPageSize(defaultValue: number): number {
+  const storedValue = window.localStorage.getItem(gameListStorageKey)
+  const parsedValue = storedValue ? Number(storedValue) : Number.NaN
+
+  return Number.isFinite(parsedValue) && parsedValue > 0 ? Math.floor(parsedValue) : defaultValue
+}
+
+function handlePageSizeChange(event: Event) {
+  const target = event.target as HTMLSelectElement
+  const parsedValue = Number(target.value)
+  const nextPageSize = Number.isFinite(parsedValue) ? parsedValue : 12
+
+  pageSize.value = nextPageSize
+  window.localStorage.setItem(gameListStorageKey, String(nextPageSize))
+  resetToFirstPage()
+}
+
 function goToPage(page: number) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
@@ -318,19 +346,23 @@ function goToPage(page: number) {
 }
 
 async function fetchGameData() {
+  if (pageSize.value === null) {
+    return
+  }
+
   loading.value = true
   try {
-    const skip = (currentPage.value - 1) * pageSize.value
+    const skip = (currentPage.value - 1) * resolvedPageSize.value
     const [gameResponse, trendingList] = await Promise.all([
       getGames(
         skip,
-        pageSize.value,
+        resolvedPageSize.value,
         false,
         searchQuery.value,
         -1,
         -1,
         sortBy.value,
-      ) as Promise<PaginatedGamesResponse>,
+      ),
       getTrendingGames(4),
     ])
 
