@@ -35,7 +35,7 @@ export async function createOrder(order: OrderCreate): Promise<Order> {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to create order')
+      throw new Error('Failed to create order:', error)
     })
 
   return response.data
@@ -47,7 +47,7 @@ export async function getMyOrders(): Promise<Order[]> {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to fetch orders')
+      throw new Error('Failed to fetch orders:', error)
     })
 
   return response.data
@@ -63,7 +63,7 @@ export async function cancelOrder(orderId: number): Promise<Order> {
       },
     )
     .catch(function (error) {
-      throw new Error('Failed to cancel order')
+      throw new Error('Failed to cancel order:', error)
     })
 
   return response.data

@@ -128,7 +128,7 @@ export async function updateGame(id: number, game: GameUpdatePayload): Promise<G
 }
 
 export async function deleteGame(id: number): Promise<void> {
-  const response = await api
+  await api
     .delete(`${API_URL}/games/${id}`, {
       headers: getHeaders(),
     })

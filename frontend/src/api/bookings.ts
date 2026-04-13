@@ -34,7 +34,7 @@ export async function createBooking(booking: BookingCreate): Promise<Booking> {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to create booking')
+      throw new Error('Failed to create booking:', error)
     })
 
   return response.data
@@ -46,7 +46,7 @@ export async function getMyBookings(): Promise<Booking[]> {
       headers: getHeaders(),
     })
     .catch(function (error) {
-      throw new Error('Failed to fetch bookings')
+      throw new Error('Failed to fetch bookings:', error)
     })
 
   return response.data
@@ -62,7 +62,7 @@ export async function returnBooking(bookingId: number): Promise<Booking> {
       },
     )
     .catch(function (error) {
-      throw new Error('Failed to return booking')
+      throw new Error('Failed to return booking:', error)
     })
 
   return response.data

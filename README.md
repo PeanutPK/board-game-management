@@ -87,6 +87,7 @@ Make sure to set directory at `/frontend`
 ```bash
 npm run lint            # linting
 npm run lint:eslint     # auto fix using eslint
+npm run lint:oxlint     # auto fix using oxlint
 ```
 
 ### Backend Lint
