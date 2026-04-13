@@ -103,7 +103,7 @@ import { useUserStore } from '@/stores/counter'
 
 import { Icon } from '@iconify/vue'
 
-const currentForm = ref<'login' | 'signup'>('login') // Matching the image's starting state
+const currentForm = ref<'login' | 'signup'>('login')
 const router = useRouter()
 const userStore = useUserStore()
 const errorMessage = ref('')

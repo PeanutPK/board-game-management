@@ -27,18 +27,4 @@ class Game(Base):
     # Relationships
     bookings = relationship("Booking", back_populates="game")
     orders = relationship("Order", back_populates="game")
-    images = relationship("GameImage", back_populates="game")
     reviews = relationship("UserReview", back_populates="game")
-
-
-class GameImage(Base):
-    """Game image database model."""
-
-    __tablename__ = "game_images"
-
-    id = Column(Integer, primary_key=True, index=True)
-    game_id = Column(Integer, ForeignKey("games.id"), index=True)
-    url = Column(String)
-
-    # Relationships
-    game = relationship("Game", back_populates="images")

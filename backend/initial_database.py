@@ -79,19 +79,18 @@ def _parse_int(value: str | None, default: int = 0) -> int:
 
 def _ensure_average_rating_column() -> None:
     """Add the average_rating column when upgrading an existing SQLite database."""
-    with engine.begin() as connection:
-        columns = connection.exec_driver_sql("PRAGMA table_info(games)").fetchall()
-        column_names = {column[1] for column in columns}
-        if "average_rating" not in column_names:
-            connection.exec_driver_sql(
-                "ALTER TABLE games ADD COLUMN average_rating FLOAT"
-            )
+    with engine.begin() as conn:
+        cols = conn.exec_driver_sql("PRAGMA table_info(games)").fetchall()
+        col_names = {column[1] for column in cols}
+
+        if "average_rating" not in col_names:
+            conn.exec_driver_sql("ALTER TABLE games ADD COLUMN average_rating FLOAT")
 
 
-def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
+def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
     """Seed games using rows from CSV and set rent to one-third of price."""
-    if not csv_path.exists():
-        raise FileNotFoundError(f"CSV file not found: {csv_path}")
+    if not path.exists():
+        raise FileNotFoundError(f"CSV file not found: {path}")
 
     db = SessionLocal()
     created = 0
@@ -101,10 +100,8 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
     try:
         existing_games = {game.title: game for game in db.query(Game).all()}
 
-        with csv_path.open(
-            "r", encoding="utf-8", errors="replace", newline=""
-        ) as csv_file:
-            reader = csv.DictReader(csv_file)
+        with path.open(encoding="utf-8") as file:
+            reader = csv.DictReader(file)
             for row in reader:
                 title = (row.get("Name") or "").strip()
                 if not title:
@@ -115,7 +112,7 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
                     row.get("Description") or ""
                 ).strip() or "No description provided"
 
-                # CSV has no explicit price field, so AvgRating is used as actual price.
+                # No price in csv, use AvgRating instead.
                 average_rating = _parse_float(row.get("AvgRating"), 0.0)
                 price = average_rating
                 if price <= 0:
@@ -129,7 +126,7 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
                 max_players = max(
                     min_players, _parse_int(row.get("MaxPlayers"), min_players)
                 )
-                average_playtime = max(0, _parse_int(row.get("MfgPlaytime"), 0))
+                avg_playtime = max(0, _parse_int(row.get("MfgPlaytime"), 0))
 
                 recommended_age = _parse_int(row.get("MfgAgeRec"), 0)
                 if recommended_age <= 0:
@@ -153,7 +150,7 @@ def seed_games_from_csv(csv_path: Path) -> tuple[int, int, int]:
                 game.average_rating = average_rating
                 game.min_players = min_players
                 game.max_players = max_players
-                game.average_playtime = average_playtime
+                game.avg_playtime = avg_playtime
                 game.recommended_age = recommended_age
                 game.stock = stock
                 game.is_available = stock > 0
@@ -206,16 +203,19 @@ def main() -> None:
         is_staff=True,
     )
 
-    games_csv_path = (
-        Path(__file__).resolve().parent / "app" / "db" / "initial_data" / "games.csv"
-    )
-    created_games, updated_games, skipped_games = seed_games_from_csv(games_csv_path)
+    base = Path(__file__).resolve().parent
+    path = base / "app/db/data/games.csv"
+
+    created, updated, skipped = seed_games_from_csv(path)
 
     print(admin_result)
     print(staff_result)
-    print(
-        f"Games seeded from CSV. Created: {created_games}, Updated: {updated_games}, Skipped: {skipped_games}"
-    )
+    print(f"""
+Games seeded from CSV.\n\
+Created: {created},\n\
+Updated: {updated},\n\
+Skipped: {skipped}
+""")
 
 
 if __name__ == "__main__":

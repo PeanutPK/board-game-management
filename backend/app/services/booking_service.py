@@ -33,7 +33,7 @@ class BookingService:
         """Get all active bookings for a user."""
         return (
             db.query(Booking)
-            .filter(Booking.user_id == user_id, Booking.is_active == True)
+            .filter(Booking.user_id == user_id, Booking.is_active)
             .all()
         )
 
