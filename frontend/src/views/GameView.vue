@@ -18,10 +18,12 @@
     />
 
     <section class="list-section shadow-md">
-      <div class="section-head list-head">
-        <div>
-          <p class="eyebrow">List</p>
-          <h2>All Games</h2>
+      <div class="section-head ">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">List</p>
+            <h2>All Games</h2>
+          </div>
         </div>
 
         <div class="filters">

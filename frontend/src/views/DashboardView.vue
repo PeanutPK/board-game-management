@@ -2,6 +2,7 @@
   <div class="view">
     <section class="view-hero shadow-md">
       <div>
+        <p class="eyebrow">Order tracking</p>
         <h1>My Dashboard</h1>
         <p class="subtext">Track and manage your rentals and orders in one place.</p>
       </div>

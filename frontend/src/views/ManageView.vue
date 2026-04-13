@@ -6,6 +6,10 @@
         <h1>Inventory Management</h1>
         <p class="subtext">Manage board game inventory, pricing, and stock levels.</p>
       </div>
+
+      <button class="action-btn secondary" type="button" @click="isAddGameModalOpen = true">
+        Add New Game
+      </button>
     </section>
 
     <div v-if="!userStore.isLoggedIn" class="guard-card">
@@ -37,7 +41,6 @@
       </section>
 
       <div class="layout-grid">
-        <ManageGameForm :key="gameFormKey" :submitting="isAddingGame" @submit="handleCreateGame" />
         <ManageStockTable
           :games="games"
           :loading="isLoadingGames"
@@ -49,6 +52,14 @@
           @set-stock="handleSetStock"
           @edit-game="openEditModal"
         />
+      </div>
+
+      <div
+        v-if="isAddGameModalOpen"
+        class="modal-backdrop"
+        @click.self="isAddGameModalOpen = false"
+      >
+        <ManageGameForm :key="gameFormKey" :submitting="isAddingGame" @submit="handleCreateGame" />
       </div>
 
       <EditGameModal
@@ -79,6 +90,7 @@ const isLoadingGames = ref(false)
 const isAddingGame = ref(false)
 const updatingGameId = ref<number | null>(null)
 const gameFormKey = ref(0)
+const isAddGameModalOpen = ref(false)
 const isEditModalOpen = ref(false)
 const isSavingGameEdit = ref(false)
 const selectedGame = ref<Game | null>(null)
@@ -130,6 +142,7 @@ async function handleCreateGame(payload: GameCreate) {
   try {
     await createGame(payload)
     gameFormKey.value += 1
+    isAddGameModalOpen.value = false
     setSuccessMessage('Game added successfully.')
     await loadGames()
   } catch (error) {

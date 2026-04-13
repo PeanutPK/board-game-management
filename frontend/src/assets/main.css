@@ -184,6 +184,39 @@ main {
   color: #665c4f;
 }
 
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-head h2 {
+  margin: 0;
+  color: var(--color-cblack);
+}
+
+.stat-card {
+  background: var(--color-cgainsboro);
+  border-radius: 1.1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(67, 86, 99, 0.16);
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-cdarkslategray);
+}
+
+.stat-card p {
+  margin: 0.25rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
 @media (max-width: 760px) {
   .view-hero,
   .panel-header {
@@ -192,6 +225,10 @@ main {
   }
 
   .view-hero {
+    align-items: start;
+  }
+
+  .section-head {
     align-items: start;
   }
 }

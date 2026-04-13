@@ -5,10 +5,6 @@
   border: 1px solid rgba(67, 86, 99, 0.16);
 }
 
-.section-head {
-  margin-bottom: 10px;
-}
-
 .table-wrap {
   overflow-x: auto;
 }
@@ -54,3 +50,7 @@
   color: #067647;
 }
 
+.status-declined {
+  background: var(--color-red-200);
+  color: #b42318;
+}

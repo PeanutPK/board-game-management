@@ -94,18 +94,6 @@ h1 {
   border-color: var(--color-cdarkslategray);
 }
 
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-}
-
-.section-head h2 {
-  margin: 0;
-  color: var(--color-cblack);
-}
-
 @media (max-width: 900px) {
   .home-view {
     grid-template-columns: minmax(180px, 260px) 1fr;
