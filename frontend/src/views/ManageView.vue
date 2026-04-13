@@ -28,7 +28,7 @@
       <section class="stats-grid">
         <article class="stat-card shadow-md">
           <h3>Total Games</h3>
-          <p>{{ games.length }}</p>
+          <p>{{ totalGames }}</p>
         </article>
         <article class="stat-card shadow-md">
           <h3>Available</h3>
@@ -47,10 +47,20 @@
           :updating-game-id="updatingGameId"
           :errorMessage="errorMessage"
           :successMessage="successMessage"
+          :search-query="searchQuery"
+          :sort-by="sortBy"
+          :page-size="pageSize"
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          :total-games="totalGames"
           @refresh="loadGames"
           @adjust-stock="handleAdjustStock"
           @set-stock="handleSetStock"
           @edit-game="openEditModal"
+          @search-change="handleSearchChange"
+          @sort-change="handleSortChange"
+          @page-size-change="handlePageSizeChange"
+          @page-change="goToPage"
         />
       </div>
 
@@ -73,10 +83,11 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/gamelist.css'
 import '@/assets/manage.css'
 
 import { computed, onMounted, ref } from 'vue'
-import type { Game, GameCreate, GameUpdatePayload } from '@/api/games'
+import type { Game, GameCreate, GameUpdatePayload, PaginatedGamesResponse } from '@/api/games'
 import { createGame, getGames, updateGame } from '@/api/games'
 import EditGameModal from '@/components/manage/EditGameModal.vue'
 import ManageGameForm from '@/components/manage/GameForm.vue'
@@ -96,6 +107,14 @@ const isSavingGameEdit = ref(false)
 const selectedGame = ref<Game | null>(null)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+// Pagination and filtering state
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalGames = ref(0)
+const totalPages = ref(1)
+const searchQuery = ref('')
+const sortBy = ref<'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock'>('title')
 
 const canManage = computed(() => {
   const role = userStore.userRole
@@ -128,12 +147,53 @@ async function loadGames() {
 
   isLoadingGames.value = true
   try {
-    games.value = await getGames(0, 100)
+    const skip = (currentPage.value - 1) * pageSize.value
+    const response: PaginatedGamesResponse = await getGames(
+      skip,
+      pageSize.value,
+      false,
+      searchQuery.value,
+      -1,
+      -1,
+      sortBy.value,
+    )
+
+    games.value = response.items
+    totalGames.value = response.total
+    totalPages.value = response.total_pages
+    currentPage.value = response.page
   } catch (error) {
     console.error('Failed to fetch games:', error)
     setErrorMessage('Failed to load games. Please try again.')
   } finally {
     isLoadingGames.value = false
+  }
+}
+
+function resetToFirstPage() {
+  currentPage.value = 1
+  loadGames()
+}
+
+function handleSearchChange(value: string) {
+  searchQuery.value = value
+  resetToFirstPage()
+}
+
+function handleSortChange(value: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock') {
+  sortBy.value = value
+  resetToFirstPage()
+}
+
+function handlePageSizeChange(value: number) {
+  pageSize.value = value
+  resetToFirstPage()
+}
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    loadGames()
   }
 }
 
@@ -144,7 +204,7 @@ async function handleCreateGame(payload: GameCreate) {
     gameFormKey.value += 1
     isAddGameModalOpen.value = false
     setSuccessMessage('Game added successfully.')
-    await loadGames()
+    resetToFirstPage()
   } catch (error) {
     console.error('Failed to create game:', error)
     setErrorMessage('Failed to add game. Check the form and try again.')

@@ -47,6 +47,27 @@ export interface GameUpdatePayload {
   is_available?: boolean
 }
 
+export interface PaginationMeta {
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+export interface PaginatedGamesResponse extends PaginationMeta {
+  items: Game[]
+}
+
+export interface GameFilterOptions {
+  skip?: number
+  limit?: number
+  available_only?: boolean
+  search?: string
+  min_stock?: number
+  max_stock?: number
+  sort_by?: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock'
+}
+
 function getHeaders() {
   const token = getToken()
   return {
@@ -59,15 +80,27 @@ export async function getGames(
   skip: number = 0,
   limit: number = 10,
   available_only: boolean = false,
-): Promise<Game[]> {
+  search: string = '',
+  min_stock: number = -1,
+  max_stock: number = -1,
+  sort_by: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock' = 'title',
+): Promise<PaginatedGamesResponse> {
+  const params = new URLSearchParams()
+  params.append('skip', skip.toString())
+  params.append('limit', limit.toString())
+  params.append('available_only', available_only.toString())
+  if (search) params.append('search', search)
+  if (min_stock >= 0) params.append('min_stock', min_stock.toString())
+  if (max_stock >= 0) params.append('max_stock', max_stock.toString())
+  params.append('sort_by', sort_by)
+
   const response = await api
-    .get(`${API_URL}/games/?skip=${skip}&limit=${limit}&available_only=${available_only}`, {
+    .get(`${API_URL}/games/?${params.toString()}`, {
       headers: getHeaders(),
     })
     .catch(function (error) {
       throw new Error('Failed to fetch games', error)
     })
-  // console.log(response.data[0])
 
   return response.data
 }
@@ -88,7 +121,7 @@ export async function getTrendingGames(limit: number = 6): Promise<Game[]> {
   const response = await api.get(`${API_URL}/games/trending?limit=${limit}`, {
     headers: getHeaders(),
   })
-  console.log(response.data)
+  // console.log(response.data)
 
   return response.data
 }

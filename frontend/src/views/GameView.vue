@@ -18,7 +18,7 @@
     />
 
     <section class="list-section shadow-md">
-      <div class="section-head ">
+      <div class="section-head">
         <div class="panel-header">
           <div>
             <p class="eyebrow">List</p>
@@ -32,12 +32,19 @@
             type="text"
             placeholder="Search games..."
             class="search-input"
+            @input="resetToFirstPage"
           />
-          <select v-model="sortBy" class="sort-select">
+          <select v-model="sortBy" class="sort-select" @change="resetToFirstPage">
             <option value="title">Sort by Title</option>
             <option value="rating">Sort by Rating</option>
-            <option value="price">Sort by Price</option>
+            <option value="price_asc">Sort by Price (Low to High)</option>
+            <option value="price_desc">Sort by Price (High to Low)</option>
             <option value="stock">Sort by Stock</option>
+          </select>
+          <select v-model.number="pageSize" class="page-size-select" @change="resetToFirstPage">
+            <option :value="12">12 per page</option>
+            <option :value="20">20 per page</option>
+            <option :value="40">40 per page</option>
           </select>
         </div>
       </div>
@@ -98,6 +105,30 @@
           </div>
         </article>
       </div>
+
+      <section v-if="totalPages > 1" class="pagination-section">
+        <button
+          type="button"
+          class="pagination-btn"
+          :disabled="currentPage === 1"
+          @click="goToPage(currentPage - 1)"
+        >
+          Previous
+        </button>
+
+        <div class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }} ({{ totalGames }} total games)
+        </div>
+
+        <button
+          type="button"
+          class="pagination-btn"
+          :disabled="currentPage === totalPages"
+          @click="goToPage(currentPage + 1)"
+        >
+          Next
+        </button>
+      </section>
     </section>
 
     <div v-if="!isLoggedIn" class="login-required">
@@ -141,23 +172,27 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/gamelist.css'
+
 import { computed, onMounted, ref, watch } from 'vue'
 import { getToken } from '../api/auth'
 import { createBooking } from '../api/bookings'
 import type { BookingCreate } from '../api/bookings'
-import { getGames, getTrendingGames, type Game } from '../api/games'
+import { getGames, getTrendingGames, type Game, type PaginatedGamesResponse } from '../api/games'
 import { createOrder } from '../api/orders'
 import TrendingCarousel from '../components/TrendingCarousel.vue'
-
-import '@/assets/gamelist.css'
 
 const games = ref<Game[]>([])
 const trendingGames = ref<Game[]>([])
 const loading = ref(false)
 const isLoggedIn = ref(!!getToken())
 const searchQuery = ref('')
-const sortBy = ref<'title' | 'rating' | 'price' | 'stock'>('rating')
+const sortBy = ref<'title' | 'rating' | 'price_asc' | 'price_desc' | 'stock'>('rating')
 const currentTrendIndex = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(12)
+const totalGames = ref(0)
+const totalPages = ref(1)
 
 const showBookingModal = ref(false)
 const showOrderModal = ref(false)
@@ -174,23 +209,7 @@ const orderData = ref({
 })
 
 const filteredGames = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-  const result = games.value.filter((game) => game.title.toLowerCase().includes(query))
-
-  result.sort((a, b) => {
-    switch (sortBy.value) {
-      case 'price':
-        return a.price - b.price
-      case 'stock':
-        return b.stock - a.stock
-      case 'rating':
-        return (b.average_rating ?? 0) - (a.average_rating ?? 0)
-      default:
-        return a.title.localeCompare(b.title)
-    }
-  })
-
-  return result
+  return games.value
 })
 
 watch(trendingGames, (nextGames) => {
@@ -286,11 +305,39 @@ async function handleOrder() {
   }
 }
 
+function resetToFirstPage() {
+  currentPage.value = 1
+  fetchGameData()
+}
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    fetchGameData()
+  }
+}
+
 async function fetchGameData() {
   loading.value = true
   try {
-    const [gameList, trendingList] = await Promise.all([getGames(0, 20), getTrendingGames(4)])
-    games.value = gameList
+    const skip = (currentPage.value - 1) * pageSize.value
+    const [gameResponse, trendingList] = await Promise.all([
+      getGames(
+        skip,
+        pageSize.value,
+        false,
+        searchQuery.value,
+        -1,
+        -1,
+        sortBy.value,
+      ) as Promise<PaginatedGamesResponse>,
+      getTrendingGames(4),
+    ])
+
+    games.value = gameResponse.items
+    totalGames.value = gameResponse.total
+    totalPages.value = gameResponse.total_pages
+    currentPage.value = gameResponse.page
     trendingGames.value = trendingList
   } catch (error) {
     console.error('Failed to fetch games:', error)
