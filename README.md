@@ -49,7 +49,9 @@ Extra information in the project [wiki](https://github.com/PeanutPK/board-game-m
 6. (Optional) Initialize database
 
     ```bash
-    python3 initial_database
+    python init_db.py
+    # or
+    python3 init_db.py
     ```
 
     After running the python file the terminal will show a question about initializing the default format data.

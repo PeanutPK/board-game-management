@@ -10,7 +10,6 @@ from pathlib import Path
 from app.core.security import get_password_hash
 from app.db.session import Base, SessionLocal, engine
 
-# Import model modules so SQLAlchemy registers all relationship targets.
 from app.models import booking as _booking_models  # noqa: F401
 from app.models import game as _game_models  # noqa: F401
 from app.models.game import Game
@@ -77,14 +76,14 @@ def _parse_int(value: str | None, default: int = 0) -> int:
         return default
 
 
-def _ensure_average_rating_column() -> None:
-    """Add the average_rating column when upgrading an existing SQLite database."""
+def _ensure_avg_rating_column() -> None:
+    """Add the avg_rating column when upgrading an existing SQLite database."""
     with engine.begin() as conn:
         cols = conn.exec_driver_sql("PRAGMA table_info(games)").fetchall()
         col_names = {column[1] for column in cols}
 
-        if "average_rating" not in col_names:
-            conn.exec_driver_sql("ALTER TABLE games ADD COLUMN average_rating FLOAT")
+        if "avg_rating" not in col_names:
+            conn.exec_driver_sql("ALTER TABLE games ADD COLUMN avg_rating FLOAT")
 
 
 def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
@@ -108,13 +107,13 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
                     skipped += 1
                     continue
 
-                description = (
+                desc = (
                     row.get("Description") or ""
                 ).strip() or "No description provided"
 
                 # No price in csv, use AvgRating instead.
-                average_rating = _parse_float(row.get("AvgRating"), 0.0)
-                price = average_rating
+                avg_rating = _parse_float(row.get("AvgRating"), 0.0)
+                price = avg_rating
                 if price <= 0:
                     price = _parse_float(row.get("BayesAvgRating"), 0.0)
                 if price <= 0:
@@ -127,6 +126,8 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
                     min_players, _parse_int(row.get("MaxPlayers"), min_players)
                 )
                 avg_playtime = max(0, _parse_int(row.get("MfgPlaytime"), 0))
+                if not avg_playtime:
+                    avg_playtime = _parse_int(row.get("ComMaxPlaytime"), 0)
 
                 recommended_age = _parse_int(row.get("MfgAgeRec"), 0)
                 if recommended_age <= 0:
@@ -144,13 +145,13 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
                 else:
                     updated += 1
 
-                game.description = description
+                game.description = desc
                 game.price = price
                 game.rent = rent
-                game.average_rating = average_rating
+                game.average_rating = avg_rating
                 game.min_players = min_players
                 game.max_players = max_players
-                game.avg_playtime = avg_playtime
+                game.average_playtime = avg_playtime
                 game.recommended_age = recommended_age
                 game.stock = stock
                 game.is_available = stock > 0
@@ -186,7 +187,7 @@ def main() -> None:
 
     # Ensure tables exist before attempting inserts/updates.
     Base.metadata.create_all(bind=engine)
-    _ensure_average_rating_column()
+    _ensure_avg_rating_column()
 
     admin_result = upsert_user(
         email=admin_email,

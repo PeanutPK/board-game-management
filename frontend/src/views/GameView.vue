@@ -68,7 +68,7 @@
               class="action-btn primary"
               type="button"
             >
-              Book
+              Rent
             </button>
             <button
               @click="openOrderModal(currentTrendingGame)"
@@ -76,7 +76,7 @@
               class="action-btn secondary"
               type="button"
             >
-              Order
+              Buy
             </button>
           </div>
         </article>
@@ -165,7 +165,7 @@
               class="action-btn primary"
               type="button"
             >
-              Book
+              Rent
             </button>
             <button
               @click="openOrderModal(game)"
@@ -173,7 +173,7 @@
               class="action-btn secondary"
               type="button"
             >
-              Order
+              Buy
             </button>
           </div>
         </article>
@@ -181,18 +181,18 @@
     </section>
 
     <div v-if="!isLoggedIn" class="login-required">
-      <p>Please log in to book or order games</p>
+      <p>Please log in to rent or buy games</p>
       <router-link to="/" class="action-btn primary">Go to Home</router-link>
     </div>
 
     <div v-if="showBookingModal" class="modal">
       <div class="modal-content">
         <button class="close" type="button" @click="showBookingModal = false">&times;</button>
-        <h2>Book {{ selectedGame?.title }}</h2>
+        <h2>Rent {{ selectedGame?.title }}</h2>
         <form @submit.prevent="handleBooking">
           <label>Return Date (optional):</label>
           <input v-model="bookingData.return_date" type="date" />
-          <button type="submit" class="action-btn primary">Confirm Booking</button>
+          <button type="submit" class="action-btn primary">Confirm Rental</button>
         </form>
       </div>
     </div>
@@ -200,7 +200,7 @@
     <div v-if="showOrderModal" class="modal">
       <div class="modal-content">
         <button class="close" type="button" @click="showOrderModal = false">&times;</button>
-        <h2>Order {{ selectedGame?.title }}</h2>
+        <h2>Buy {{ selectedGame?.title }}</h2>
         <form @submit.prevent="handleOrder">
           <label>Quantity:</label>
           <input
