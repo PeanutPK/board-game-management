@@ -55,24 +55,23 @@ main {
 }
 
 .action-btn.primary {
-  background: #a64f2f;
+  background: var(--color-cdarksalmon);
   color: #fff;
 }
 
 .action-btn.secondary {
-  background: #f0e0b5;
-  color: #4d3b2b;
-}
-
-.action-btn.ghost {
-  background: transparent;
-  border: 1px solid rgba(67, 86, 99, 0.22);
+  background: var(--color-cdarkkhaki);
   color: #4d3b2b;
 }
 
 .action-btn.danger {
-  background: #c94d4d;
-  color: #fff;
+  background: var(--color-cindianred);
+  color: var(--color-cgainsboro);
+}
+
+.action-btn.success {
+  background: var(--color-cdarkslategray);
+  color: var(--color-cgainsboro);
 }
 
 .action-btn:disabled {
@@ -87,11 +86,6 @@ main {
   font-weight: 600;
   cursor: pointer;
   width: 2.5rem;
-}
-
-.btn.edit {
-  background: #5f5b34;
-  color: var(--color-cgainsboro);
 }
 
 .btn.plus {

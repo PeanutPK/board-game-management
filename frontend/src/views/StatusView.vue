@@ -1,8 +1,8 @@
 <template>
   <div class="status-container">
     <div class="status-card p-6 shadow-md rounded-lg text-cblack">
-      <p class="eyebrow">Backend Monitor</p>
-      <h1 class="text-3xl font-bold mb-4 border-b pb-2 text-cblack">System Status</h1>
+      <p class="status-eyebrow">Backend Monitor</p>
+      <h1 class="status-title text-3xl font-bold mb-4 border-b pb-2 text-cblack">System Status</h1>
 
       <div v-if="loading" class="loading">Checking backend health...</div>
 

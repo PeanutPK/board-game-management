@@ -58,14 +58,31 @@ class OrderService:
 
         # Deduct from stock
         game = GameService.get_game(db, cast(int, cast(Any, order).game_id))
-        setattr(
-            game,
-            "stock",
-            cast(int, cast(Any, game).stock) - cast(int, cast(Any, order).quantity),
-        )
+        new_stock = cast(int, cast(Any, game).stock) - cast(int, cast(Any, order).quantity)
+        setattr(game, "stock", new_stock)
+
+        # If stock reaches 0 or below, decline pending orders that exceed available stock
+        if new_stock <= 0:
+            OrderService._decline_exceeding_orders(db, cast(int, cast(Any, game).id), new_stock)
 
         db.add(order)
         db.add(game)
         db.commit()
         db.refresh(order)
         return order
+
+    @staticmethod
+    def _decline_exceeding_orders(db: Session, game_id: int, current_stock: int) -> None:
+        """Decline all pending orders that exceed the current stock level."""
+        # Get all pending orders for this game
+        pending_orders = (
+            db.query(Order)
+            .filter(Order.game_id == game_id, Order.status == "pending")
+            .all()
+        )
+
+        for pending_order in pending_orders:
+            # If the order quantity exceeds current stock, decline it
+            if cast(int, cast(Any, pending_order).quantity) > current_stock:
+                setattr(pending_order, "status", "declined")
+                db.add(pending_order)

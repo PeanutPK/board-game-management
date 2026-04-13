@@ -120,3 +120,9 @@ class GameService:
         """Check if game has enough stock."""
         game = GameService.get_game(db, game_id)
         return bool(cast(Any, game).stock >= quantity)
+
+    @staticmethod
+    def get_available_stock_for_rental(db: Session, game_id: int) -> int:
+        """Get available stock for rental."""
+        game = GameService.get_game(db, game_id)
+        return max(0, cast(int, cast(Any, game).stock))

@@ -6,17 +6,6 @@
         <h1>Game List</h1>
         <p class="subtext">Explore the catalog and check the highest rated games first.</p>
       </div>
-
-      <div class="hero-stats">
-        <div class="stat-pill">
-          <span class="stat-label">Total</span>
-          <strong>{{ games.length }}</strong>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-label">Trending</span>
-          <strong>{{ trendingGames.length }}</strong>
-        </div>
-      </div>
     </section>
 
     <TrendingCarousel
@@ -28,7 +17,7 @@
       @update-index="currentTrendIndex = $event"
     />
 
-    <section class="list-section">
+    <section class="list-section shadow-md">
       <div class="section-head list-head">
         <div>
           <p class="eyebrow">List</p>
@@ -119,7 +108,7 @@
         <button class="close" type="button" @click="showBookingModal = false">&times;</button>
         <h2>Rent {{ selectedGame?.title }}</h2>
         <form @submit.prevent="handleBooking">
-          <label>Return Date (optional):</label>
+          <label>Return Date (default: 1 day):</label>
           <input v-model="bookingData.return_date" type="date" />
           <button type="submit" class="action-btn primary">Confirm Rental</button>
         </form>
@@ -174,7 +163,7 @@ const selectedGame = ref<Game | null>(null)
 
 const bookingData = ref<BookingCreate>({
   game_id: 0,
-  return_date: null,
+  return_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '', // default to 1 day later
 })
 
 const orderData = ref({
@@ -214,16 +203,7 @@ watch(trendingGames, (nextGames) => {
 })
 
 onMounted(async () => {
-  loading.value = true
-  try {
-    const [gameList, trendingList] = await Promise.all([getGames(0, 100), getTrendingGames(4)])
-    games.value = gameList
-    trendingGames.value = trendingList
-  } catch (error) {
-    console.error('Failed to fetch games:', error)
-  } finally {
-    loading.value = false
-  }
+  await fetchGameData()
 })
 
 function formatRating(rating: number | null): string {
@@ -255,7 +235,7 @@ function openBookingModal(game: Game) {
   selectedGame.value = game
   bookingData.value = {
     game_id: game.id,
-    return_date: null,
+    return_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '',
   }
   showBookingModal.value = true
 }
@@ -273,7 +253,14 @@ function openOrderModal(game: Game) {
 
 async function handleBooking() {
   try {
+    const today = new Date().toISOString().split('T')[0] ?? ''
+    const returnDate = bookingData.value.return_date
+    if (!returnDate || returnDate < today) {
+      alert('Return date cannot be in the past')
+      return
+    }
     await createBooking(bookingData.value)
+    await fetchGameData()
     showBookingModal.value = false
     alert('Booking created successfully!')
   } catch (error) {
@@ -288,11 +275,25 @@ async function handleOrder() {
       game_id: orderData.value.game_id,
       quantity: orderData.value.quantity,
     })
+    await fetchGameData()
     showOrderModal.value = false
     alert('Order placed successfully!')
   } catch (error) {
     console.error('Failed to place order:', error)
     alert('Failed to place order')
+  }
+}
+
+async function fetchGameData() {
+  loading.value = true
+  try {
+    const [gameList, trendingList] = await Promise.all([getGames(0, 20), getTrendingGames(4)])
+    games.value = gameList
+    trendingGames.value = trendingList
+  } catch (error) {
+    console.error('Failed to fetch games:', error)
+  } finally {
+    loading.value = false
   }
 }
 </script>

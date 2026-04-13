@@ -17,7 +17,7 @@ export interface Booking {
 
 export interface BookingCreate {
   game_id: number
-  return_date?: string | null
+  return_date: string | null
 }
 
 function getHeaders() {

@@ -1,5 +1,5 @@
 <template>
-  <section class="trending-section">
+  <section class="trending-section shadow-md">
     <div class="panel-header">
       <div>
         <p class="eyebrow">Trending</p>
