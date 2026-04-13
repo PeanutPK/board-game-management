@@ -84,10 +84,11 @@ export async function getGameStats(): Promise<{ total: number; available: number
   return response.data
 }
 
-export async function getTrendingGames(limit: number = 4): Promise<Game[]> {
+export async function getTrendingGames(limit: number = 6): Promise<Game[]> {
   const response = await api.get(`${API_URL}/games/trending?limit=${limit}`, {
     headers: getHeaders(),
   })
+  console.log(response.data)
 
   return response.data
 }

@@ -1,6 +1,6 @@
 <template>
   <section class="trending-section">
-    <div class="section-head">
+    <div class="panel-header">
       <div>
         <p class="eyebrow">Trending</p>
         <h2>Highest Rated Games</h2>
@@ -41,23 +41,27 @@
           </div>
         </div>
 
-        <div class="trend-actions">
-          <button
-            @click="$emit('rent', currentTrendingGame)"
-            :disabled="!isLoggedIn || !currentTrendingGame.is_available"
-            class="action-btn primary"
-            type="button"
-          >
-            Rent
-          </button>
-          <button
-            @click="$emit('buy', currentTrendingGame)"
-            :disabled="!isLoggedIn || currentTrendingGame.stock === 0"
-            class="action-btn secondary"
-            type="button"
-          >
-            Buy
-          </button>
+        <div class="flex justify-between items-center">
+          <div class="trend-actions">
+            <button
+              @click="$emit('rent', currentTrendingGame)"
+              :disabled="!isLoggedIn || !currentTrendingGame.is_available"
+              class="action-btn primary"
+              type="button"
+            >
+              Rent
+            </button>
+            <button
+              @click="$emit('buy', currentTrendingGame)"
+              :disabled="!isLoggedIn || currentTrendingGame.stock === 0"
+              class="action-btn secondary"
+              type="button"
+            >
+              Buy
+            </button>
+          </div>
+          <p v-if="currentTrendingGame.stock > 0">Stock: {{ currentTrendingGame.stock }}</p>
+          <p v-else class="error-message">Out of Stock</p>
         </div>
       </article>
 
@@ -108,7 +112,8 @@ const currentTrendingGame = computed(() => {
 
 function showPrevious() {
   if (props.trendingGames.length === 0) return
-  const newIndex = (props.currentTrendIndex - 1 + props.trendingGames.length) % props.trendingGames.length
+  const newIndex =
+    (props.currentTrendIndex - 1 + props.trendingGames.length) % props.trendingGames.length
   emit('updateIndex', newIndex)
 }
 
