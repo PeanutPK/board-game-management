@@ -109,7 +109,7 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
 
                 desc = (
                     row.get("Description") or ""
-                ).strip() or "No description provided"
+                ).strip().capitalize() or "No description provided"
 
                 # No price in csv, use AvgRating instead.
                 avg_rating = _parse_float(row.get("AvgRating"), 0.0)

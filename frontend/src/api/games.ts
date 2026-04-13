@@ -67,7 +67,7 @@ export async function getGames(
     .catch(function (error) {
       throw new Error('Failed to fetch games', error)
     })
-  console.log(response.data[0])
+  // console.log(response.data[0])
 
   return response.data
 }

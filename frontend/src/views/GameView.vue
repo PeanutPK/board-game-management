@@ -1,10 +1,10 @@
 <template>
-  <div class="game-page">
-    <section class="hero-card shadow-md">
+  <div class="view">
+    <section class="view-hero shadow-md">
       <div>
         <p class="eyebrow">Browse games</p>
         <h1>Game List</h1>
-        <p class="hero-copy">Explore the catalog and check the highest rated games first.</p>
+        <p class="subtext">Explore the catalog and check the highest rated games first.</p>
       </div>
 
       <div class="hero-stats">
@@ -19,85 +19,14 @@
       </div>
     </section>
 
-    <section class="trending-section">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Trending</p>
-          <h2>Highest Rated Games</h2>
-        </div>
-        <p class="section-subtitle">Ranked by average rating from the game catalog.</p>
-      </div>
-
-      <div v-if="loading" class="loading-card">Loading trending games...</div>
-
-      <div v-else-if="trendingGames.length === 0" class="empty-state">
-        No trending games found yet.
-      </div>
-
-      <div v-else class="trending-carousel">
-        <article v-if="currentTrendingGame" class="trend-card carousel-slide">
-          <div class="trend-top">
-            <div>
-              <p class="trend-rank">Top rated #{{ currentTrendIndex + 1 }}</p>
-              <h3>{{ currentTrendingGame.title }}</h3>
-            </div>
-            <span class="rating-badge">{{ formatRating(currentTrendingGame.average_rating) }}</span>
-          </div>
-
-          <p class="description">{{ currentTrendingGame.description }}</p>
-
-          <div class="detail-grid compact">
-            <div class="detail-item">
-              <span>Price</span>
-              <strong>${{ currentTrendingGame.price.toFixed(2) }}</strong>
-            </div>
-            <div class="detail-item">
-              <span>Players</span>
-              <strong>{{ formatPlayers(currentTrendingGame) }}</strong>
-            </div>
-            <div class="detail-item">
-              <span>Playtime</span>
-              <strong>{{ formatPlaytime(currentTrendingGame) }}</strong>
-            </div>
-          </div>
-
-          <div class="trend-actions">
-            <button
-              @click="openBookingModal(currentTrendingGame)"
-              :disabled="!isLoggedIn || !currentTrendingGame.is_available"
-              class="action-btn primary"
-              type="button"
-            >
-              Rent
-            </button>
-            <button
-              @click="openOrderModal(currentTrendingGame)"
-              :disabled="!isLoggedIn || currentTrendingGame.stock === 0"
-              class="action-btn secondary"
-              type="button"
-            >
-              Buy
-            </button>
-          </div>
-        </article>
-
-        <div v-if="trendingGames.length > 1" class="carousel-controls">
-          <button class="carousel-btn" type="button" @click="showPreviousTrend">&lt;</button>
-          <div class="carousel-dots">
-            <button
-              v-for="(_game, index) in trendingGames"
-              :key="index"
-              class="carousel-dot"
-              :class="{ active: index === currentTrendIndex }"
-              :aria-label="`Go to trending game ${index + 1}`"
-              type="button"
-              @click="goToTrend(index)"
-            ></button>
-          </div>
-          <button class="carousel-btn" type="button" @click="showNextTrend">&gt;</button>
-        </div>
-      </div>
-    </section>
+    <TrendingCarousel
+      :trending-games="trendingGames"
+      :loading="loading"
+      :current-trend-index="currentTrendIndex"
+      @rent="openBookingModal"
+      @buy="openOrderModal"
+      @update-index="currentTrendIndex = $event"
+    />
 
     <section class="list-section">
       <div class="section-head list-head">
@@ -226,6 +155,8 @@ import { getToken } from '../api/auth'
 import { createBooking } from '../api/bookings'
 import type { BookingCreate } from '../api/bookings'
 import { getGames, getTrendingGames, type Game } from '../api/games'
+import { createOrder } from '../api/orders'
+import TrendingCarousel from '../components/TrendingCarousel.vue'
 
 import '@/assets/gamelist.css'
 
@@ -271,14 +202,6 @@ const filteredGames = computed(() => {
   return result
 })
 
-const currentTrendingGame = computed(() => {
-  if (trendingGames.value.length === 0) {
-    return null
-  }
-
-  return trendingGames.value[currentTrendIndex.value] ?? null
-})
-
 watch(trendingGames, (nextGames) => {
   if (nextGames.length === 0) {
     currentTrendIndex.value = 0
@@ -303,31 +226,6 @@ onMounted(async () => {
   }
 })
 
-function showPreviousTrend() {
-  if (trendingGames.value.length === 0) {
-    return
-  }
-
-  currentTrendIndex.value =
-    (currentTrendIndex.value - 1 + trendingGames.value.length) % trendingGames.value.length
-}
-
-function showNextTrend() {
-  if (trendingGames.value.length === 0) {
-    return
-  }
-
-  currentTrendIndex.value = (currentTrendIndex.value + 1) % trendingGames.value.length
-}
-
-function goToTrend(index: number) {
-  if (index < 0 || index >= trendingGames.value.length) {
-    return
-  }
-
-  currentTrendIndex.value = index
-}
-
 function formatRating(rating: number | null): string {
   if (rating === null || rating === undefined) {
     return 'NR'
@@ -349,14 +247,6 @@ function formatPlayers(game: Game): string {
   }
 
   return `${minPlayers}-${maxPlayers}`
-}
-
-function formatPlaytime(game: Game): string {
-  if (!game.average_playtime) {
-    return 'N/A'
-  }
-
-  return `${game.average_playtime} mins`
 }
 
 function openBookingModal(game: Game) {
@@ -394,7 +284,10 @@ async function handleBooking() {
 
 async function handleOrder() {
   try {
-    console.log('Order placed:', orderData.value)
+    await createOrder({
+      game_id: orderData.value.game_id,
+      quantity: orderData.value.quantity,
+    })
     showOrderModal.value = false
     alert('Order placed successfully!')
   } catch (error) {

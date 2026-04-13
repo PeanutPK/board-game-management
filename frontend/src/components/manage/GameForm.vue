@@ -1,10 +1,11 @@
 <template>
   <section class="manage-card shadow-md">
-    <h2 class="title">Add New Game</h2>
-    <p class="form-note">
-      Create complete metadata for a board game. Rent defaults to one-third of price.
-    </p>
-
+    <div class="panel-header">
+      <h2>Add New Game</h2>
+      <p class="form-note">
+        Create complete metadata for a board game. Rent defaults to one-third of price.
+      </p>
+    </div>
     <form class="form-grid" @submit.prevent="submitForm">
       <label class="field">
         <span>Title</span>

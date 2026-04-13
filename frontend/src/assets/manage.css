@@ -80,13 +80,6 @@
   margin-bottom: 0.75rem;
 }
 
-.title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--color-cblack);
-}
-
 .rows {
   display: grid;
   gap: 1rem;
@@ -126,14 +119,12 @@
   gap: 1rem;
   margin-top: 0.5rem;
   color: var(--color-cblack);
-  font-weight: 600;
   flex-wrap: wrap;
 }
 
 .row-meta.compact {
   margin-top: 0.35rem;
   font-size: 0.85rem;
-  font-weight: 500;
 }
 
 .row-actions {
@@ -214,8 +205,4 @@
   margin-bottom: 0.75rem;
   font-weight: 700;
   font-size: 1.25rem;
-}
-
-.modal-header h2 {
-  margin: 0;
 }

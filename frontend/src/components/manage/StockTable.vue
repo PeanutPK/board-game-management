@@ -1,6 +1,6 @@
 <template>
   <section class="manage-card shadow-md">
-    <div class="header-row">
+    <div class="panel-header header-row">
       <h2 class="title">Manage Stock</h2>
       <button
         type="button"
@@ -11,6 +11,9 @@
         {{ loading ? 'Refreshing...' : 'Refresh' }}
       </button>
     </div>
+    <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
+    <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
+    <br v-if="errorMessage || successMessage">
 
     <div v-if="games.length === 0" class="empty">No games found.</div>
 
@@ -23,63 +26,63 @@
           </p>
         </div>
 
-        <div class="row-meta">
+        <div class="row-meta compact">
           <span>Price: ${{ game.price.toFixed(2) }}</span>
           <span>Rent: ${{ getRent(game).toFixed(2) }}</span>
           <span>Stock: {{ game.stock }}</span>
-        </div>
-
-        <div class="row-meta compact">
           <span>Players: {{ getMinPlayers(game) }}-{{ getMaxPlayers(game) }}</span>
           <span>Playtime: {{ getPlaytime(game) }}m</span>
           <span>Age: {{ getAge(game) }}+</span>
         </div>
 
         <div class="row-actions">
-          <button
-            type="button"
-            class="action-btn secondary"
-            :disabled="updatingGameId === game.id"
-            @click="$emit('edit-game', game)"
-          >
-            Edit
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="btn minus"
+              :disabled="updatingGameId === game.id || game.stock === 0"
+              @click="$emit('adjust-stock', game, -1)"
+            >
+              -
+            </button>
+            <input
+              :value="customStock[game.id] ?? game.stock"
+              type="number"
+              min="0"
+              step="1"
+              :disabled="updatingGameId === game.id"
+              @input="updateCustomStock(game.id, $event)"
+              class="w-20 text-center border border-gray-500 p-1 rounded-md"
+            />
+            <button
+              type="button"
+              class="btn plus text-center"
+              :disabled="updatingGameId === game.id"
+              @click="$emit('adjust-stock', game, 1)"
+            >
+              +
+            </button>
+          </div>
 
-          <button
-            type="button"
-            class="btn minus"
-            :disabled="updatingGameId === game.id || game.stock === 0"
-            @click="$emit('adjust-stock', game, -1)"
-          >
-            -1
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="action-btn secondary"
+              :disabled="updatingGameId === game.id"
+              @click="$emit('edit-game', game)"
+            >
+              Edit
+            </button>
 
-          <button
-            type="button"
-            class="btn plus"
-            :disabled="updatingGameId === game.id"
-            @click="$emit('adjust-stock', game, 1)"
-          >
-            +1
-          </button>
-
-          <input
-            :value="customStock[game.id] ?? game.stock"
-            type="number"
-            min="0"
-            step="1"
-            :disabled="updatingGameId === game.id"
-            @input="updateCustomStock(game.id, $event)"
-          />
-
-          <button
-            type="button"
-            class="action-btn primary"
-            :disabled="updatingGameId === game.id"
-            @click="$emit('set-stock', game, Number(customStock[game.id] ?? game.stock))"
-          >
-            {{ updatingGameId === game.id ? 'Saving...' : 'Set Stock' }}
-          </button>
+            <button
+              type="button"
+              class="action-btn primary"
+              :disabled="updatingGameId === game.id"
+              @click="$emit('set-stock', game, Number(customStock[game.id] ?? game.stock))"
+            >
+              {{ updatingGameId === game.id ? 'Saving...' : 'Set Stock' }}
+            </button>
+          </div>
         </div>
       </article>
     </div>
@@ -94,6 +97,8 @@ const props = defineProps<{
   games: Game[]
   loading: boolean
   updatingGameId: number | null
+  errorMessage: string
+  successMessage: string
 }>()
 
 defineEmits<{

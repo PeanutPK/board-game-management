@@ -21,9 +21,6 @@
     </div>
 
     <template v-else>
-      <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
-      <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
-
       <section class="stats-grid">
         <article class="stat-card shadow-md">
           <h3>Total Games</h3>
@@ -45,6 +42,8 @@
           :games="games"
           :loading="isLoadingGames"
           :updating-game-id="updatingGameId"
+          :errorMessage="errorMessage"
+          :successMessage="successMessage"
           @refresh="loadGames"
           @adjust-stock="handleAdjustStock"
           @set-stock="handleSetStock"
