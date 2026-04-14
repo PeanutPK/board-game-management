@@ -12,17 +12,58 @@ Extra information in the project [wiki](https://github.com/PeanutPK/board-game-m
   - [Technology Stack](#technology-stack)
     - [Frontend (TypeScript)](#frontend-typescript)
     - [Backend (Python)](#backend-python)
+    - [Database (SQLite)](#database-sqlite)
   - [Installation](#installation)
+    - [Prerequisite](#prerequisite)
     - [Backend](#backend)
     - [Frontend](#frontend)
-  - [Linting](#linting)
+  - [Linting or Format checking](#linting-or-format-checking)
     - [Frontend Lint](#frontend-lint)
     - [Backend Lint](#backend-lint)
   - [Screenshots of Your System](#screenshots-of-your-system)
 
 ## System Architecture Overview
 
+This project uses a client-server architecture with a service-based (modular monolith) backend:
+
+- Frontend (Client-side and UI)
+  - Handles UI rendering, route navigation, and calling backend APIs.
+  - Main views include home, game list, game detail, dashboard, admin, and manage pages.
+- Backend
+  - FastAPI Router (Server-side)
+  - Uses layered structure:
+    - `api/v1` for endpoints (Interface Layer)
+    - `services` for business logic (Service Layer)
+    - `models` for database entities
+    - `schemas` for request/response validation
+
 ## User Roles & Permissions
+
+The system supports three role types:
+
+- User
+  - Browse games and game details.
+  - Create bookings (rent games).
+  - Create orders (buy games).
+  - View personal activity on dashboard.
+  - Submit/update game reviews.
+
+- Staff
+  - All User permissions.
+  - Access Management page.
+  - Add/edit game information.
+  - Update stock and availability.
+
+- Admin
+  - All Staff permissions.
+  - Access Admin page.
+  - Manage user accounts and permissions.
+
+Route protection behavior:
+
+- `/manage` is restricted to Staff/Admin.
+- `/admin` is restricted to Admin-level management access.
+- Authenticated actions (booking, ordering, reviewing) require login token.
 
 ## Technology Stack
 
@@ -47,23 +88,46 @@ Extra information in the project [wiki](https://github.com/PeanutPK/board-game-m
   - pydantic            # data validation
   - python-jose         # JWT
 
+### Database (SQLite)
+
+- Stores users, games, bookings, orders, and reviews.
+- Seed script (`init_db.py`) can initialize default users and game data.
+
 ## Installation
+
+### Prerequisite
+
+- Python3 (prefer version 3.14.0)
+- Node (prefer version 20.19.0)
+- Download and extract or clone the project from GitHub repo
+
+  ```bash
+  git clone https://github.com/PeanutPK/board-game-management.git
+  ```
+
+- Each step of installation will assume that you are in the root directory of `board-game-management` project
 
 ### Backend
 
-1. Create virtual environment
+1. Change directory to backend directory
+
+    ```bash
+    cd backend
+    ```
+
+2. Create virtual environment
 
     ```bash
     python3 -m venv .venv
     ```
 
-2. Copy environment file and configure the variable inside
+3. Copy environment file and configure the variable inside
 
     ```bash
     cp example.env .env
     ```
 
-3. Activate virtual environment
+4. Activate virtual environment
 
     - MacOS/Linux
 
@@ -77,20 +141,21 @@ Extra information in the project [wiki](https://github.com/PeanutPK/board-game-m
         .venv/Scripts/activate
         ```
 
-4. Download required dependencies
+5. Download required dependencies
 
     ```bash
     pip install -r requirements.txt
     ```
 
-5. Run the app
-    The backend will automatically create the database file (board_games.db).
+6. Run the app
+
+    The backend will automatically create the database file in backend directory (board_games.db).
 
     ```bash
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     ```
 
-6. (Optional) Initialize database
+7. (Optional) Initialize database
 
     ```bash
     python init_db.py
@@ -106,25 +171,28 @@ Extra information in the project [wiki](https://github.com/PeanutPK/board-game-m
 
 ### Frontend
 
-1. Install dependencies
+1. Change directory to frontend directory
+2. Install dependencies
 
     ```bash
     npm i
+    # or 
+    npm install
     ```
 
-2. Copy environment file and configure the variable inside
+3. Copy environment file and configure the variable inside
 
     ```bash
     cp example.env .env
     ```
 
-3. Run app
+4. Run app
 
     ```bash
     npm run dev
     ```
 
-## Linting
+## Linting or Format checking
 
 ### Frontend Lint
 
@@ -165,4 +233,4 @@ black .                 # run black formatter
 | Status Page                              | ![status page](images/status/page.png)           |
 | Policy Page                              | ![policy page](images/policy/page.png)           |
 | Contact Page                             | ![contact page](images/contact/page.png)         |
-| Home Page                                | ![home](images/home.png)                         |
+| Home Page                                | ![home](images/home/page.png)                    |
