@@ -12,6 +12,8 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 0.8rem;
 }
 
 .data-table th,

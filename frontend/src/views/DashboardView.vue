@@ -30,7 +30,7 @@
 
     <!-- Bookings Section -->
     <section class="card-section shadow-md">
-      <div class="section-head">
+      <div class="section-head panel-header">
         <h2>My Active Rentals</h2>
       </div>
 
@@ -74,7 +74,7 @@
 
     <!-- Orders Section -->
     <section class="card-section shadow-md">
-      <div class="section-head">
+      <div class="section-head panel-header">
         <h2>My Orders</h2>
       </div>
 

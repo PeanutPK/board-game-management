@@ -198,6 +198,23 @@ main {
   color: var(--color-cblack);
 }
 
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.stat-pill {
+  gap: 0.5rem;
+  border: 1px solid rgba(67, 86, 99, 0.22);
+  background: #fffdf8;
+}
+
+.stat-label {
+  color: var(--color-cdarkslategray);
+  font-size: 0.8rem;
+}
+
 .stat-card {
   background: var(--color-cgainsboro);
   border-radius: 1.1rem;
@@ -230,5 +247,9 @@ main {
 
   .section-head {
     align-items: start;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -48,17 +48,6 @@
   font-weight: 700;
 }
 
-.stat-pill {
-  gap: 0.5rem;
-  border: 1px solid rgba(67, 86, 99, 0.22);
-  background: #fffdf8;
-}
-
-.stat-label {
-  color: var(--color-cdarkslategray);
-  font-size: 0.8rem;
-}
-
 .trending-section,
 .list-section {
   padding: 1.25rem;
