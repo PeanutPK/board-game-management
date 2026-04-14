@@ -1,5 +1,7 @@
 """API for game reviews."""
 
+from typing import Any, cast
+
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
@@ -31,14 +33,14 @@ def get_current_user_id(authorization: str = Header(None)) -> int:
 
 def _serialize_review(review: UserReview) -> ReviewResponse:
     """Convert a review ORM object into the API response schema."""
-    username = review.user.username if review.user else "Unknown"
+    username = cast(str, cast(Any, review.user).username) if review.user else "Unknown"
     return ReviewResponse(
-        id=review.id,
-        user_id=review.user_id,
-        game_id=review.game_id,
+        id=cast(int, cast(Any, review).id),
+        user_id=cast(int, cast(Any, review).user_id),
+        game_id=cast(int, cast(Any, review).game_id),
         username=username,
-        rating=review.rating,
-        comment=review.comment,
+        rating=cast(int, cast(Any, review).rating),
+        comment=cast(str, cast(Any, review).comment),
     )
 
 

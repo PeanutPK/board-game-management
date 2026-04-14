@@ -255,7 +255,9 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
                     skipped += 1
                     continue
 
-                if _upsert_game(db_session=db, existing_games=existing_games, fields=parsed):
+                if _upsert_game(
+                    db_session=db, existing_games=existing_games, fields=parsed
+                ):
                     created += 1
                 else:
                     updated += 1
