@@ -2,7 +2,7 @@
 
 from typing import Any, cast
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -41,13 +41,59 @@ class GameService:
 
     @staticmethod
     def get_all_games(
-        db: Session, skip: int = 0, limit: int = 10, available_only: bool = False
-    ) -> list[Game]:
-        """Get all games with pagination."""
-        query = db.query(Game).offset(skip).limit(limit)
+        db: Session,
+        skip: int = 0,
+        limit: int = 10,
+        available_only: bool = False,
+        search: str = "",
+        min_stock: int = -1,
+        max_stock: int = -1,
+        sort_by: str = "title",
+    ) -> tuple[list[Game], int]:
+        """Get all games with pagination, filtering, and sorting.
+
+        Returns: (games_list, total_count)
+        """
+        query = db.query(Game)
+
+        # Apply filters
         if available_only:
             query = query.filter(Game.stock > 0)
-        return query.all()
+
+        if search.strip():
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Game.title.ilike(search_term),
+                    Game.description.ilike(search_term),
+                )
+            )
+
+        if min_stock >= 0:
+            query = query.filter(Game.stock >= min_stock)
+
+        if max_stock >= 0:
+            query = query.filter(Game.stock <= max_stock)
+
+        # Get total count before pagination
+        total_count = query.count()
+
+        # Apply sorting
+        if sort_by == "price_asc":
+            query = query.order_by(Game.price.asc())
+        elif sort_by == "price_desc":
+            query = query.order_by(Game.price.desc())
+        elif sort_by == "rating":
+            query = query.order_by(func.coalesce(Game.average_rating, 0).desc())
+        elif sort_by == "stock":
+            query = query.order_by(Game.stock.desc())
+        else:  # Default to title
+            query = query.order_by(Game.title.asc())
+
+        # Apply pagination
+        games = query.offset(skip).limit(limit).all()
+
+        return games, total_count
 
     @staticmethod
     def get_trending_games(db: Session, limit: int = 4) -> list[Game]:
@@ -120,3 +166,9 @@ class GameService:
         """Check if game has enough stock."""
         game = GameService.get_game(db, game_id)
         return bool(cast(Any, game).stock >= quantity)
+
+    @staticmethod
+    def get_available_stock_for_rental(db: Session, game_id: int) -> int:
+        """Get available stock for rental."""
+        game = GameService.get_game(db, game_id)
+        return max(0, cast(int, cast(Any, game).stock))

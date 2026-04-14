@@ -6,6 +6,10 @@
         <h1>Inventory Management</h1>
         <p class="subtext">Manage board game inventory, pricing, and stock levels.</p>
       </div>
+
+      <button class="action-btn secondary" type="button" @click="isAddGameModalOpen = true">
+        Add New Game
+      </button>
     </section>
 
     <div v-if="!userStore.isLoggedIn" class="guard-card">
@@ -24,7 +28,7 @@
       <section class="stats-grid">
         <article class="stat-card shadow-md">
           <h3>Total Games</h3>
-          <p>{{ games.length }}</p>
+          <p>{{ totalGames }}</p>
         </article>
         <article class="stat-card shadow-md">
           <h3>Available</h3>
@@ -37,18 +41,37 @@
       </section>
 
       <div class="layout-grid">
-        <ManageGameForm :key="gameFormKey" :submitting="isAddingGame" @submit="handleCreateGame" />
+        <div v-if="!isTableReady" class="loading-card">Preparing stock view...</div>
         <ManageStockTable
+          v-else
           :games="games"
           :loading="isLoadingGames"
           :updating-game-id="updatingGameId"
           :errorMessage="errorMessage"
           :successMessage="successMessage"
+          :search-query="searchQuery"
+          :sort-by="sortBy"
+          :page-size="resolvedPageSize"
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          :total-games="totalGames"
           @refresh="loadGames"
           @adjust-stock="handleAdjustStock"
           @set-stock="handleSetStock"
           @edit-game="openEditModal"
+          @search-change="handleSearchChange"
+          @sort-change="handleSortChange"
+          @page-size-change="handlePageSizeChange"
+          @page-change="goToPage"
         />
+      </div>
+
+      <div
+        v-if="isAddGameModalOpen"
+        class="modal-backdrop"
+        @click.self="isAddGameModalOpen = false"
+      >
+        <ManageGameForm :key="gameFormKey" :submitting="isAddingGame" @submit="handleCreateGame" />
       </div>
 
       <EditGameModal
@@ -62,11 +85,14 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/gamelist.css'
+import '@/assets/modal.css'
 import '@/assets/manage.css'
 
 import { computed, onMounted, ref } from 'vue'
 import type { Game, GameCreate, GameUpdatePayload } from '@/api/games'
-import { createGame, getGames, updateGame } from '@/api/games'
+import { createGame, updateGame } from '@/api/games'
+import { usePaginatedGames } from '@/composables/usePaginatedGames'
 import EditGameModal from '@/components/manage/EditGameModal.vue'
 import ManageGameForm from '@/components/manage/GameForm.vue'
 import ManageStockTable from '@/components/manage/StockTable.vue'
@@ -75,15 +101,39 @@ import { useUserStore } from '@/stores/counter'
 const userStore = useUserStore()
 
 const games = ref<Game[]>([])
-const isLoadingGames = ref(false)
 const isAddingGame = ref(false)
 const updatingGameId = ref<number | null>(null)
 const gameFormKey = ref(0)
+const isAddGameModalOpen = ref(false)
 const isEditModalOpen = ref(false)
 const isSavingGameEdit = ref(false)
 const selectedGame = ref<Game | null>(null)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+const {
+  currentPage,
+  pageSize,
+  totalGames,
+  totalPages,
+  searchQuery,
+  sortBy,
+  loading: isLoadingGames,
+  isReady,
+  initPageSize,
+  goToPage: goToPaginatedPage,
+  handlePageSizeChange: handlePaginationPageSizeChange,
+  handleSearchChange: handleComposableSearchChange,
+  handleSortChange: handleComposableSortChange,
+  fetchGames: fetchPaginatedGames,
+} = usePaginatedGames({
+  storageKey: 'manage-stock-page-size',
+  defaultPageSize: 12,
+  defaultSort: 'title',
+})
+
+const isTableReady = computed(() => isReady.value)
+const resolvedPageSize = computed(() => pageSize.value ?? 12)
 
 const canManage = computed(() => {
   const role = userStore.userRole
@@ -94,6 +144,7 @@ const availableCount = computed(() => games.value.filter((game) => game.is_avail
 const lowStockCount = computed(() => games.value.filter((game) => game.stock < 5).length)
 
 onMounted(async () => {
+  initPageSize()
   if (canManage.value) {
     await loadGames()
   }
@@ -114,15 +165,35 @@ async function loadGames() {
     return
   }
 
-  isLoadingGames.value = true
   try {
-    games.value = await getGames(0, 100)
+    const gameResponse = await fetchPaginatedGames()
+    if (gameResponse) {
+      games.value = gameResponse.items
+    }
   } catch (error) {
     console.error('Failed to fetch games:', error)
     setErrorMessage('Failed to load games. Please try again.')
-  } finally {
-    isLoadingGames.value = false
   }
+}
+
+async function handleSearchChange(value: string) {
+  handleComposableSearchChange(value)
+  await loadGames()
+}
+
+async function handleSortChange(value: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock') {
+  handleComposableSortChange(value)
+  await loadGames()
+}
+
+async function handlePageSizeChange(value: number) {
+  handlePaginationPageSizeChange(value)
+  await loadGames()
+}
+
+async function goToPage(page: number) {
+  goToPaginatedPage(page)
+  await loadGames()
 }
 
 async function handleCreateGame(payload: GameCreate) {
@@ -130,7 +201,9 @@ async function handleCreateGame(payload: GameCreate) {
   try {
     await createGame(payload)
     gameFormKey.value += 1
+    isAddGameModalOpen.value = false
     setSuccessMessage('Game added successfully.')
+    goToPaginatedPage(1)
     await loadGames()
   } catch (error) {
     console.error('Failed to create game:', error)

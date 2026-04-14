@@ -1,7 +1,7 @@
 """Game schema definitions for request validation and response formatting."""
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Generic, TypeVar
 
 
 class GameCreate(BaseModel):
@@ -48,5 +48,23 @@ class GameResponse(BaseModel):
     max_players: Optional[int] = None
     average_playtime: Optional[int] = None
     recommended_age: Optional[int] = None
+    stock: int
+    is_available: bool
+
+    class Config:
+        from_attributes = True
+
+
+T = TypeVar("T")
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    """Paginated response schema with metadata."""
+
+    items: list[T]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
     stock: int
     is_available: bool

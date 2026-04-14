@@ -6,17 +6,6 @@
         <h1>Game List</h1>
         <p class="subtext">Explore the catalog and check the highest rated games first.</p>
       </div>
-
-      <div class="hero-stats">
-        <div class="stat-pill">
-          <span class="stat-label">Total</span>
-          <strong>{{ games.length }}</strong>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-label">Trending</span>
-          <strong>{{ trendingGames.length }}</strong>
-        </div>
-      </div>
     </section>
 
     <TrendingCarousel
@@ -28,11 +17,13 @@
       @update-index="currentTrendIndex = $event"
     />
 
-    <section class="list-section">
-      <div class="section-head list-head">
-        <div>
-          <p class="eyebrow">List</p>
-          <h2>All Games</h2>
+    <section v-if="isGameListReady" class="list-section shadow-md">
+      <div class="section-head">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">List</p>
+            <h2>All Games</h2>
+          </div>
         </div>
 
         <div class="filters">
@@ -41,24 +32,35 @@
             type="text"
             placeholder="Search games..."
             class="search-input"
+            @input="handleGameSearchChange(($event.target as HTMLInputElement).value)"
           />
-          <select v-model="sortBy" class="sort-select">
+          <select :value="sortBy" class="sort-select" @change="handleGameSortChange(($event.target as HTMLSelectElement).value as any)">
             <option value="title">Sort by Title</option>
             <option value="rating">Sort by Rating</option>
-            <option value="price">Sort by Price</option>
+            <option value="price_asc">Sort by Price (Low to High)</option>
+            <option value="price_desc">Sort by Price (High to Low)</option>
             <option value="stock">Sort by Stock</option>
+          </select>
+          <select
+            :value="pageSize ?? 12"
+            class="page-size-select"
+            @change="handleGamePageSizeChange(Number(($event.target as HTMLSelectElement).value))"
+          >
+            <option :value="12">12 per page</option>
+            <option :value="20">20 per page</option>
+            <option :value="40">40 per page</option>
           </select>
         </div>
       </div>
 
       <div v-if="loading" class="loading-card">Loading games...</div>
 
-      <div v-else-if="filteredGames.length === 0" class="empty-state">
+      <div v-else-if="games.length === 0" class="empty-state">
         <p>No games found</p>
       </div>
 
       <div v-else class="games-grid">
-        <article v-for="game in filteredGames" :key="game.id" class="game-card">
+        <article v-for="game in games" :key="game.id" class="game-card">
           <div class="game-header">
             <h3>{{ game.title }}</h3>
             <span :class="`availability ${game.is_available ? 'available' : 'unavailable'}`">
@@ -88,6 +90,9 @@
           </div>
 
           <div class="actions">
+            <router-link :to="`/game/${game.id}`" class="action-btn tertiary">
+              Details
+            </router-link>
             <button
               @click="openBookingModal(game)"
               :disabled="!isLoggedIn || !game.is_available"
@@ -107,6 +112,34 @@
           </div>
         </article>
       </div>
+
+      <section v-if="totalPages > 1" class="pagination-section">
+        <button
+          type="button"
+          class="pagination-btn"
+          :disabled="currentPage === 1"
+          @click="handleGoToPage(currentPage - 1)"
+        >
+          Previous
+        </button>
+
+        <div class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }} ({{ totalGames }} total games)
+        </div>
+
+        <button
+          type="button"
+          class="pagination-btn"
+          :disabled="currentPage === totalPages"
+          @click="handleGoToPage(currentPage + 1)"
+        >
+          Next
+        </button>
+      </section>
+    </section>
+
+    <section v-else class="list-section shadow-md">
+      <div class="loading-card">Preparing game list...</div>
     </section>
 
     <div v-if="!isLoggedIn" class="login-required">
@@ -119,7 +152,7 @@
         <button class="close" type="button" @click="showBookingModal = false">&times;</button>
         <h2>Rent {{ selectedGame?.title }}</h2>
         <form @submit.prevent="handleBooking">
-          <label>Return Date (optional):</label>
+          <label>Return Date (default: 1 day):</label>
           <input v-model="bookingData.return_date" type="date" />
           <button type="submit" class="action-btn primary">Confirm Rental</button>
         </form>
@@ -150,23 +183,46 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/shared-controls.css'
+import '@/assets/modal.css'
+import '@/assets/gamelist.css'
+
 import { computed, onMounted, ref, watch } from 'vue'
 import { getToken } from '../api/auth'
 import { createBooking } from '../api/bookings'
 import type { BookingCreate } from '../api/bookings'
-import { getGames, getTrendingGames, type Game } from '../api/games'
+import { getTrendingGames, type Game } from '../api/games'
 import { createOrder } from '../api/orders'
+import { usePaginatedGames } from '../composables/usePaginatedGames'
 import TrendingCarousel from '../components/TrendingCarousel.vue'
-
-import '@/assets/gamelist.css'
 
 const games = ref<Game[]>([])
 const trendingGames = ref<Game[]>([])
-const loading = ref(false)
 const isLoggedIn = ref(!!getToken())
-const searchQuery = ref('')
-const sortBy = ref<'title' | 'rating' | 'price' | 'stock'>('rating')
 const currentTrendIndex = ref(0)
+
+const {
+  currentPage,
+  pageSize,
+  totalGames,
+  totalPages,
+  searchQuery,
+  sortBy,
+  loading,
+  isReady,
+
+  initPageSize,
+
+  goToPage: gotoPage,
+  handlePageSizeChange: handlePaginationPageSizeChange,
+  handleSearchChange,
+  handleSortChange,
+  fetchGames: fetchPaginatedGames,
+} = usePaginatedGames({
+  storageKey: 'game-list-page-size',
+  defaultPageSize: 12,
+  defaultSort: 'rating',
+})
 
 const showBookingModal = ref(false)
 const showOrderModal = ref(false)
@@ -174,7 +230,7 @@ const selectedGame = ref<Game | null>(null)
 
 const bookingData = ref<BookingCreate>({
   game_id: 0,
-  return_date: null,
+  return_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '', // default to 1 day later
 })
 
 const orderData = ref({
@@ -182,25 +238,7 @@ const orderData = ref({
   quantity: 1,
 })
 
-const filteredGames = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-  const result = games.value.filter((game) => game.title.toLowerCase().includes(query))
-
-  result.sort((a, b) => {
-    switch (sortBy.value) {
-      case 'price':
-        return a.price - b.price
-      case 'stock':
-        return b.stock - a.stock
-      case 'rating':
-        return (b.average_rating ?? 0) - (a.average_rating ?? 0)
-      default:
-        return a.title.localeCompare(b.title)
-    }
-  })
-
-  return result
-})
+const isGameListReady = computed(() => isReady.value)
 
 watch(trendingGames, (nextGames) => {
   if (nextGames.length === 0) {
@@ -214,16 +252,8 @@ watch(trendingGames, (nextGames) => {
 })
 
 onMounted(async () => {
-  loading.value = true
-  try {
-    const [gameList, trendingList] = await Promise.all([getGames(0, 100), getTrendingGames(4)])
-    games.value = gameList
-    trendingGames.value = trendingList
-  } catch (error) {
-    console.error('Failed to fetch games:', error)
-  } finally {
-    loading.value = false
-  }
+  initPageSize()
+  await fetchGameData()
 })
 
 function formatRating(rating: number | null): string {
@@ -255,7 +285,7 @@ function openBookingModal(game: Game) {
   selectedGame.value = game
   bookingData.value = {
     game_id: game.id,
-    return_date: null,
+    return_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '',
   }
   showBookingModal.value = true
 }
@@ -273,7 +303,14 @@ function openOrderModal(game: Game) {
 
 async function handleBooking() {
   try {
+    const today = new Date().toISOString().split('T')[0] ?? ''
+    const returnDate = bookingData.value.return_date
+    if (!returnDate || returnDate < today) {
+      alert('Return date cannot be in the past')
+      return
+    }
     await createBooking(bookingData.value)
+    await fetchGameData()
     showBookingModal.value = false
     alert('Booking created successfully!')
   } catch (error) {
@@ -288,11 +325,45 @@ async function handleOrder() {
       game_id: orderData.value.game_id,
       quantity: orderData.value.quantity,
     })
+    await fetchGameData()
     showOrderModal.value = false
     alert('Order placed successfully!')
   } catch (error) {
     console.error('Failed to place order:', error)
     alert('Failed to place order')
+  }
+}
+
+async function handleGameSearchChange(value: string) {
+  handleSearchChange(value)
+  await fetchGameData()
+}
+
+async function handleGameSortChange(value: 'title' | 'rating' | 'price_asc' | 'price_desc' | 'stock') {
+  handleSortChange(value)
+  await fetchGameData()
+}
+
+async function handleGamePageSizeChange(value: number) {
+  handlePaginationPageSizeChange(value)
+  await fetchGameData()
+}
+
+async function handleGoToPage(page: number) {
+  gotoPage(page)
+  await fetchGameData()
+}
+
+async function fetchGameData() {
+  const gameResponse = await fetchPaginatedGames()
+  if (gameResponse) {
+    games.value = gameResponse.items
+  }
+
+  try {
+    trendingGames.value = await getTrendingGames(4)
+  } catch (error) {
+    console.error('Failed to fetch trending games:', error)
   }
 }
 </script>

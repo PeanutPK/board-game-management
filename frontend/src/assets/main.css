@@ -55,24 +55,29 @@ main {
 }
 
 .action-btn.primary {
-  background: #a64f2f;
-  color: #fff;
+  background: var(--color-cdarksalmon);
+  color: #fffdf8
 }
 
 .action-btn.secondary {
-  background: #f0e0b5;
-  color: #4d3b2b;
-}
-
-.action-btn.ghost {
-  background: transparent;
-  border: 1px solid rgba(67, 86, 99, 0.22);
+  background: var(--color-cdarkkhaki);
   color: #4d3b2b;
 }
 
 .action-btn.danger {
-  background: #c94d4d;
-  color: #fff;
+  background: var(--color-cindianred);
+  color: var(--color-cgainsboro);
+}
+
+.action-btn.success {
+  background: var(--color-cdarkslategray);
+  color: var(--color-cgainsboro);
+}
+
+.action-btn.tertiary {
+  background: #fffdf8;
+  color: var(--color-cdarkslategray);
+  border: 1px solid rgba(67, 86, 99, 0.22);
 }
 
 .action-btn:disabled {
@@ -87,11 +92,6 @@ main {
   font-weight: 600;
   cursor: pointer;
   width: 2.5rem;
-}
-
-.btn.edit {
-  background: #5f5b34;
-  color: var(--color-cgainsboro);
 }
 
 .btn.plus {
@@ -139,6 +139,11 @@ main {
   margin: 0;
   font-weight: 700;
   font-size: 2rem;
+}
+
+.panel-header h3 {
+  font-weight: 700;
+  font-size: 1.5rem;
 }
 
 .view-hero h1 {
@@ -190,6 +195,56 @@ main {
   color: #665c4f;
 }
 
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-head h2 {
+  margin: 0;
+  color: var(--color-cblack);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.stat-pill {
+  gap: 0.5rem;
+  border: 1px solid rgba(67, 86, 99, 0.22);
+  background: #fffdf8;
+}
+
+.stat-label {
+  color: var(--color-cdarkslategray);
+  font-size: 0.8rem;
+}
+
+.stat-card {
+  background: var(--color-cgainsboro);
+  border-radius: 1.1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(67, 86, 99, 0.16);
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-cdarkslategray);
+}
+
+.stat-card p {
+  margin: 0.25rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
 @media (max-width: 760px) {
   .view-hero,
   .panel-header {
@@ -199,5 +254,13 @@ main {
 
   .view-hero {
     align-items: start;
+  }
+
+  .section-head {
+    align-items: start;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }

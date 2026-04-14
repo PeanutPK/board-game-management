@@ -1,19 +1,47 @@
 <template>
   <section class="manage-card shadow-md">
-    <div class="panel-header header-row">
-      <h2 class="title">Manage Stock</h2>
-      <button
-        type="button"
-        class="action-btn secondary"
-        :disabled="loading"
-        @click="$emit('refresh')"
-      >
-        {{ loading ? 'Refreshing...' : 'Refresh' }}
-      </button>
-    </div>
-    <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
-    <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
-    <br v-if="errorMessage || successMessage">
+    <section class="section-head">
+      <div class="panel-header header-row">
+        <div>
+          <p class="eyebrow">List</p>
+          <h2>Manage Stock</h2>
+        </div>
+        <button
+          type="button"
+          class="action-btn secondary"
+          :disabled="loading"
+          @click="$emit('refresh')"
+        >
+          {{ loading ? 'Refreshing...' : 'Refresh' }}
+        </button>
+      </div>
+
+      <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
+      <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
+      <br v-if="errorMessage || successMessage" />
+
+      <section class="filters">
+        <input
+          :value="searchQuery"
+          type="text"
+          placeholder="Search games by title or description..."
+          class="search-input"
+          @input="onSearchInput"
+        />
+        <select :value="sortBy" class="sort-select" @change="onSortChange">
+          <option value="title">Sort by Title</option>
+          <option value="price_asc">Sort by Price (Low to High)</option>
+          <option value="price_desc">Sort by Price (High to Low)</option>
+          <option value="rating">Sort by Rating</option>
+          <option value="stock">Sort by Stock</option>
+        </select>
+        <select :value="pageSize" class="page-size-select" @change="onPageSizeChange">
+          <option :value="12">12 per page</option>
+          <option :value="20">20 per page</option>
+          <option :value="40">40 per page</option>
+        </select>
+      </section>
+    </section>
 
     <div v-if="games.length === 0" class="empty">No games found.</div>
 
@@ -86,6 +114,30 @@
         </div>
       </article>
     </div>
+
+    <section v-if="totalPages > 1" class="pagination-section">
+      <button
+        type="button"
+        class="pagination-btn"
+        :disabled="currentPage === 1"
+        @click="$emit('page-change', currentPage - 1)"
+      >
+        Previous
+      </button>
+
+      <div class="pagination-info">
+        Page {{ currentPage }} of {{ totalPages }} ({{ totalGames }} total games)
+      </div>
+
+      <button
+        type="button"
+        class="pagination-btn"
+        :disabled="currentPage === totalPages"
+        @click="$emit('page-change', currentPage + 1)"
+      >
+        Next
+      </button>
+    </section>
   </section>
 </template>
 
@@ -99,13 +151,23 @@ const props = defineProps<{
   updatingGameId: number | null
   errorMessage: string
   successMessage: string
+  searchQuery: string
+  sortBy: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock'
+  pageSize: number
+  currentPage: number
+  totalPages: number
+  totalGames: number
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   refresh: []
   'adjust-stock': [game: Game, delta: number]
   'set-stock': [game: Game, stock: number]
   'edit-game': [game: Game]
+  'search-change': [value: string]
+  'sort-change': [value: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock']
+  'page-size-change': [value: number]
+  'page-change': [value: number]
 }>()
 
 const customStock = reactive<Record<number, number>>({})
@@ -124,6 +186,23 @@ function updateCustomStock(gameId: number, event: Event) {
   const target = event.target as HTMLInputElement
   const parsed = Number(target.value)
   customStock[gameId] = Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : 0
+}
+
+function onSearchInput(event: Event) {
+  const target = event.target as HTMLInputElement
+  const value = target.value
+  emit('search-change', value)
+}
+
+function onSortChange(event: Event) {
+  const target = event.target as HTMLSelectElement
+  emit('sort-change', target.value as 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock')
+}
+
+function onPageSizeChange(event: Event) {
+  const target = event.target as HTMLSelectElement
+  const parsed = Number(target.value)
+  emit('page-size-change', Number.isFinite(parsed) ? parsed : 10)
 }
 
 function getRent(game: Game): number {

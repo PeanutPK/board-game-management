@@ -119,10 +119,6 @@
     display: grid;
   }
 
-  .view-hero {
-    align-items: start;
-  }
-
   .table-head {
     display: none;
   }

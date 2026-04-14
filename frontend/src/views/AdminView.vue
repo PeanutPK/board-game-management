@@ -6,17 +6,22 @@
         <h1>User Management</h1>
         <p class="subtext">Create accounts, adjust roles, and remove users from one place.</p>
       </div>
+      <button class="action-btn secondary" type="button" @click="openAddUserModal">
+        Add New User
+      </button>
     </section>
 
-    <AdminUserForm
-      :form="form"
-      :editing-user-id="editingUserId"
-      :status-message="statusMessage"
-      :error-message="errorMessage"
-      :is-saving="isSaving"
-      @submit="handleSubmit"
-      @reset="resetForm"
-    />
+    <div v-if="isUserModalOpen" class="modal-backdrop" @click.self="handleFormReset">
+      <AdminUserForm
+        :form="form"
+        :editing-user-id="editingUserId"
+        :status-message="statusMessage"
+        :error-message="errorMessage"
+        :is-saving="isSaving"
+        @submit="handleSubmit"
+        @reset="handleFormReset"
+      />
+    </div>
 
     <AdminUserTable
       :users="users"
@@ -29,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/modal.css'
 import '@/assets/admin.css'
 
 import { onMounted, reactive, ref } from 'vue'
@@ -58,6 +64,7 @@ const isSaving = ref(false)
 const statusMessage = ref('')
 const errorMessage = ref('')
 const editingUserId = ref<number | null>(null)
+const isUserModalOpen = ref(false)
 
 const form = reactive({
   email: '',
@@ -82,7 +89,18 @@ function resetForm() {
   setFeedback('')
 }
 
+function openAddUserModal() {
+  resetForm()
+  isUserModalOpen.value = true
+}
+
+function handleFormReset() {
+  resetForm()
+  isUserModalOpen.value = false
+}
+
 function startEdit(user: User) {
+  isUserModalOpen.value = true
   editingUserId.value = user.id
   form.email = user.email
   form.username = user.username
@@ -138,6 +156,7 @@ async function handleSubmit(submittedForm: AdminFormData) {
     }
 
     resetForm()
+    isUserModalOpen.value = false
     await loadUsers()
   } catch (error) {
     setFeedback(error instanceof Error ? error.message : 'Failed to save user', true)

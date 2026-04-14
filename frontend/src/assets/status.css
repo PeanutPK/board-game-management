@@ -1,7 +1,6 @@
 .status-container {
   width: 100%;
   height: 100%;
-  margin: auto;
   align-items: center;
   justify-items: center;
 }
@@ -13,7 +12,7 @@
   background: var(--color-cgainsboro);
 }
 
-.eyebrow {
+.status-eyebrow {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.11em;
@@ -22,7 +21,7 @@
   color: var(--color-cdarkslategray);
 }
 
-h1 {
+.status-title {
   margin: 0.4rem 0 1rem;
   color: var(--color-cblack);
   font-size: clamp(1.6rem, 2.8vw, 2.2rem);

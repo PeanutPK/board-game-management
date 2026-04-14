@@ -1,13 +1,8 @@
 <template>
-  <section class="view-panel shadow-md">
-    <div class="panel-header">
-      <div>
-        <h2>{{ editingUserId ? 'Edit user' : 'Add user' }}</h2>
-        <p>{{ editingUserId ? 'Update the selected account.' : 'Create a new user account.' }}</p>
-      </div>
-      <button v-if="editingUserId" class="action-btn ghost" type="button" @click="$emit('reset')">
-        Cancel edit
-      </button>
+  <section class="modal-panel shadow-md">
+    <div class="modal-header">
+      <h2>{{ editingUserId ? 'Edit User' : 'Add New User' }}</h2>
+      <button class="action-btn secondary" type="button" @click="$emit('reset')">Close</button>
     </div>
 
     <form class="user-form" @submit.prevent="handleSubmit">
