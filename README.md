@@ -3,6 +3,50 @@
 A website that manages the current board game stock for each store for user to lends or buy the board games.
 Extra information in the project [wiki](https://github.com/PeanutPK/board-game-management/wiki)
 
+## Table of Content
+
+- [board-game-management](#board-game-management)
+  - [Table of Content](#table-of-content)
+  - [System Architecture Overview](#system-architecture-overview)
+  - [User Roles \& Permissions](#user-roles--permissions)
+  - [Technology Stack](#technology-stack)
+    - [Frontend (TypeScript)](#frontend-typescript)
+    - [Backend (Python)](#backend-python)
+  - [Installation](#installation)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+  - [Linting](#linting)
+    - [Frontend Lint](#frontend-lint)
+    - [Backend Lint](#backend-lint)
+  - [Screenshots of Your System](#screenshots-of-your-system)
+
+## System Architecture Overview
+
+## User Roles & Permissions
+
+## Technology Stack
+
+### Frontend (TypeScript)
+
+- Frameworks
+  - Vue.js
+- Styling
+  - Iconify (icons)
+  - Tailwindcss (for inline and tweaking some style)
+  - css (detail styling, more customizable)
+
+### Backend (Python)
+
+- Frameworks & Dependencies
+  - FastAPI             # API framework
+  - Uvicorn             # ASGI server application
+  - Black               # formatting
+  - mypy                # type checking
+  - bcrypt              # encrypt data
+  - sqlalchemy          # SQL toolkit for python
+  - pydantic            # data validation
+  - python-jose         # JWT
+
 ## Installation
 
 ### Backend
@@ -100,3 +144,25 @@ Make sure to set directory at `/backend`
 black --check .         # check using black formatter
 black .                 # run black formatter
 ```
+
+## Screenshots of Your System
+
+| Page                                     | Screenshot                                       |
+| ---------------------------------------- | ------------------------------------------------ |
+| Admin Page (Admin Permission)            | ![admin page](images/admin/page.png)             |
+| Admin Edit User Modal                    | ![admin edit](images/admin/edit.png)             |
+| Admin Add User Modal                     | ![admin add](images/admin/add.png)               |
+| Management Page (Staff/Admin Permission) | ![management page](images/manage/page.png)       |
+| Management Add Game Modal                | ![mangement add](images/manage/add.png)          |
+| Management Edit Game Modal               | ![management edit](images/manage/edit.png)       |
+| Game List Page (Carousel)                | ![game page](images/game/list/carousel.png)      |
+| Game List Page (List)                    | ![game list](images/game/list/list.png)          |
+| Game Detail Page (Description)           | ![game detail page](images/game/detail/page.png) |
+| Game Detail Page (Review)                | ![game review](images/game/detail/review.png)    |
+| Login Page                               | ![login page](images/auth/login.png)             |
+| Signup Page                              | ![signup page](images/auth/signup.png)           |
+| Dashboard Page                           | ![dashboard page](images/dashboard/page.png)     |
+| Status Page                              | ![status page](images/status/page.png)           |
+| Policy Page                              | ![policy page](images/policy/page.png)           |
+| Contact Page                             | ![contact page](images/contact/page.png)         |
+| Home Page                                | ![home](images/home.png)                         |

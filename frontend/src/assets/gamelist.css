@@ -41,7 +41,6 @@
   justify-content: end;
 }
 
-.stat-pill,
 .rating-badge,
 .availability {
   display: inline-flex;
