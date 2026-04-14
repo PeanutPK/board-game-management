@@ -43,6 +43,9 @@
 
         <div class="flex justify-between items-center">
           <div class="trend-actions">
+            <router-link :to="`/game/${currentTrendingGame.id}`" class="action-btn tertiary">
+              Details
+            </router-link>
             <button
               @click="$emit('rent', currentTrendingGame)"
               :disabled="!isLoggedIn || !currentTrendingGame.is_available"

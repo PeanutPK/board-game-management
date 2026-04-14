@@ -90,6 +90,9 @@
           </div>
 
           <div class="actions">
+            <router-link :to="`/game/${game.id}`" class="action-btn tertiary">
+              Details
+            </router-link>
             <button
               @click="openBookingModal(game)"
               :disabled="!isLoggedIn || !game.is_available"
