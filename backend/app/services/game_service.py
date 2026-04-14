@@ -51,15 +51,15 @@ class GameService:
         sort_by: str = "title",
     ) -> tuple[list[Game], int]:
         """Get all games with pagination, filtering, and sorting.
-        
+
         Returns: (games_list, total_count)
         """
         query = db.query(Game)
-        
+
         # Apply filters
         if available_only:
             query = query.filter(Game.stock > 0)
-        
+
         if search.strip():
             search_term = f"%{search}%"
             query = query.filter(
@@ -68,16 +68,16 @@ class GameService:
                     Game.description.ilike(search_term),
                 )
             )
-        
+
         if min_stock >= 0:
             query = query.filter(Game.stock >= min_stock)
-        
+
         if max_stock >= 0:
             query = query.filter(Game.stock <= max_stock)
-        
+
         # Get total count before pagination
         total_count = query.count()
-        
+
         # Apply sorting
         if sort_by == "price_asc":
             query = query.order_by(Game.price.asc())
@@ -89,10 +89,10 @@ class GameService:
             query = query.order_by(Game.stock.desc())
         else:  # Default to title
             query = query.order_by(Game.title.asc())
-        
+
         # Apply pagination
         games = query.offset(skip).limit(limit).all()
-        
+
         return games, total_count
 
     @staticmethod

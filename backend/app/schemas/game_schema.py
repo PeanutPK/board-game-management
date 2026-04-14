@@ -50,7 +50,7 @@ class GameResponse(BaseModel):
     recommended_age: Optional[int] = None
     stock: int
     is_available: bool
-    
+
     class Config:
         from_attributes = True
 

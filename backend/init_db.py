@@ -87,6 +87,107 @@ def _ensure_avg_rating_column() -> None:
             conn.exec_driver_sql("ALTER TABLE games ADD COLUMN avg_rating FLOAT")
 
 
+def _resolve_price(avg_rating: float, bayes_avg_rating: float) -> float:
+    if avg_rating > 0:
+        return avg_rating
+    return bayes_avg_rating
+
+
+def _resolve_average_playtime(row: dict[str, str | None]) -> int:
+    avg_playtime = max(0, _parse_int(row.get("MfgPlaytime"), 0))
+    if avg_playtime:
+        return avg_playtime
+    return _parse_int(row.get("ComMaxPlaytime"), 0)
+
+
+def _resolve_recommended_age(row: dict[str, str | None]) -> int:
+    recommended_age = _parse_int(row.get("MfgAgeRec"), 0)
+    if recommended_age > 0:
+        return recommended_age
+    return _parse_int(row.get("ComAgeRec"), 8)
+
+
+def _resolve_stock(row: dict[str, str | None]) -> int:
+    stock = _parse_int(row.get("NumOwned"), 0)
+    return max(0, min(stock, 100))
+
+
+def _parse_game_row(row: dict[str, str | None]) -> dict[str, Any] | None:
+    title = (row.get("Name") or "").strip()
+    if not title:
+        return None
+
+    desc = (
+        row.get("Description") or ""
+    ).strip().capitalize() or "No description provided"
+
+    avg_rating = _parse_float(row.get("AvgRating"), 0.0)
+    bayes_avg_rating = _parse_float(row.get("BayesAvgRating"), 0.0)
+    price = _resolve_price(avg_rating, bayes_avg_rating)
+    if price <= 0:
+        return None
+
+    min_players = max(1, _parse_int(row.get("MinPlayers"), 1))
+    max_players = max(min_players, _parse_int(row.get("MaxPlayers"), min_players))
+    stock = _resolve_stock(row)
+
+    return {
+        "title": title,
+        "description": desc,
+        "price": price,
+        "rent": round(price / 3, 2),
+        "average_rating": avg_rating,
+        "min_players": min_players,
+        "max_players": max_players,
+        "average_playtime": _resolve_average_playtime(row),
+        "recommended_age": _resolve_recommended_age(row),
+        "stock": stock,
+        "is_available": stock > 0,
+    }
+
+
+def _apply_game_fields(game: Game, fields: dict[str, Any]) -> None:
+    for key, value in fields.items():
+        if key == "title":
+            continue
+        setattr(game, key, value)
+
+
+def _read_setup_values() -> tuple[tuple[str, str, str], tuple[str, str, str]]:
+    setup = input("Use default setup? (y/n): ").strip().lower()
+    if not setup or setup == "y":
+        return (
+            ("admin@example.com", "admin", "adminpassword"),
+            ("staff@example.com", "staff", "staffpassword"),
+        )
+
+    return (
+        (
+            input("Admin email: "),
+            input("Admin username: "),
+            input("Admin password: "),
+        ),
+        (
+            input("Staff email: "),
+            input("Staff username: "),
+            input("Staff password: "),
+        ),
+    )
+
+
+def _validate_distinct_users(
+    admin_values: tuple[str, str, str],
+    staff_values: tuple[str, str, str],
+) -> None:
+    admin_email, admin_username, _ = admin_values
+    staff_email, staff_username, _ = staff_values
+
+    if admin_email == staff_email:
+        raise ValueError("Admin and staff emails must be different")
+    if admin_username == staff_username:
+        raise ValueError("Admin and staff usernames must be different")
+
+
 def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
     """Seed games using rows from CSV and set rent to one-third of price."""
     if not path.exists():
@@ -105,40 +206,11 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
         with path.open(encoding="utf-8") as file:
             reader = csv.DictReader(file)
             for row in reader:
-                title = (row.get("Name") or "").strip()
-                if not title:
+                parsed = _parse_game_row(row)
+                if parsed is None:
                     skipped += 1
                     continue
-
-                desc = (
-                    row.get("Description") or ""
-                ).strip().capitalize() or "No description provided"
-
-                # No price in csv, use AvgRating instead.
-                avg_rating = _parse_float(row.get("AvgRating"), 0.0)
-                price = avg_rating
-                if price <= 0:
-                    price = _parse_float(row.get("BayesAvgRating"), 0.0)
-                if price <= 0:
-                    skipped += 1
-                    continue
-
-                rent = round(price / 3, 2)
-                min_players = max(1, _parse_int(row.get("MinPlayers"), 1))
-                max_players = max(
-                    min_players, _parse_int(row.get("MaxPlayers"), min_players)
-                )
-                avg_playtime = max(0, _parse_int(row.get("MfgPlaytime"), 0))
-                if not avg_playtime:
-                    avg_playtime = _parse_int(row.get("ComMaxPlaytime"), 0)
-
-                recommended_age = _parse_int(row.get("MfgAgeRec"), 0)
-                if recommended_age <= 0:
-                    recommended_age = _parse_int(row.get("ComAgeRec"), 8)
-
-                stock = _parse_int(row.get("NumOwned"), 0)
-                stock = max(0, min(stock, 100))
-
+                title = str(parsed["title"])
                 game = existing_games.get(title)
                 if game is None:
                     game = Game(title=title)
@@ -148,17 +220,7 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
                 else:
                     updated += 1
 
-                typed_game = game
-                setattr(typed_game, "description", desc)
-                setattr(typed_game, "price", price)
-                setattr(typed_game, "rent", rent)
-                setattr(typed_game, "average_rating", avg_rating)
-                setattr(typed_game, "min_players", min_players)
-                setattr(typed_game, "max_players", max_players)
-                setattr(typed_game, "average_playtime", avg_playtime)
-                setattr(typed_game, "recommended_age", recommended_age)
-                setattr(typed_game, "stock", stock)
-                setattr(typed_game, "is_available", stock > 0)
+                _apply_game_fields(game, parsed)
 
         db.commit()
         return created, updated, skipped
@@ -168,26 +230,10 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
 
 def main() -> None:
     """Create/update users and seed games from CSV."""
-    setup = input("Use default setup? (y/n): ").lower()
-    if not setup or setup == "y":
-        admin_email = "admin@example.com"
-        admin_username = "admin"
-        admin_password = "adminpassword"
-        staff_email = "staff@example.com"
-        staff_username = "staff"
-        staff_password = "staffpassword"
-    else:
-        admin_email = input("Admin email: ")
-        admin_username = input("Admin username: ")
-        admin_password = input("Admin password: ")
-        staff_email = input("Staff email: ")
-        staff_username = input("Staff username: ")
-        staff_password = input("Staff password: ")
-
-    if admin_email == staff_email:
-        raise ValueError("Admin and staff emails must be different")
-    if admin_username == staff_username:
-        raise ValueError("Admin and staff usernames must be different")
+    admin_values, staff_values = _read_setup_values()
+    _validate_distinct_users(admin_values, staff_values)
+    admin_email, admin_username, admin_password = admin_values
+    staff_email, staff_username, staff_password = staff_values
 
     # Ensure tables exist before attempting inserts/updates.
     Base.metadata.create_all(bind=engine)

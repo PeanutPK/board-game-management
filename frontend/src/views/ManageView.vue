@@ -90,8 +90,9 @@ import '@/assets/modal.css'
 import '@/assets/manage.css'
 
 import { computed, onMounted, ref } from 'vue'
-import type { Game, GameCreate, GameUpdatePayload, PaginatedGamesResponse } from '@/api/games'
-import { createGame, getGames, updateGame } from '@/api/games'
+import type { Game, GameCreate, GameUpdatePayload } from '@/api/games'
+import { createGame, updateGame } from '@/api/games'
+import { usePaginatedGames } from '@/composables/usePaginatedGames'
 import EditGameModal from '@/components/manage/EditGameModal.vue'
 import ManageGameForm from '@/components/manage/GameForm.vue'
 import ManageStockTable from '@/components/manage/StockTable.vue'
@@ -100,7 +101,6 @@ import { useUserStore } from '@/stores/counter'
 const userStore = useUserStore()
 
 const games = ref<Game[]>([])
-const isLoadingGames = ref(false)
 const isAddingGame = ref(false)
 const updatingGameId = ref<number | null>(null)
 const gameFormKey = ref(0)
@@ -110,17 +110,29 @@ const isSavingGameEdit = ref(false)
 const selectedGame = ref<Game | null>(null)
 const errorMessage = ref('')
 const successMessage = ref('')
-const pageSizeStorageKey = 'manage-stock-page-size'
 
-// Pagination and filtering state
-const currentPage = ref(1)
-const pageSize = ref<number | null>(null)
-const totalGames = ref(0)
-const totalPages = ref(1)
-const searchQuery = ref('')
-const sortBy = ref<'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock'>('title')
+const {
+  currentPage,
+  pageSize,
+  totalGames,
+  totalPages,
+  searchQuery,
+  sortBy,
+  loading: isLoadingGames,
+  isReady,
+  initPageSize,
+  goToPage: goToPaginatedPage,
+  handlePageSizeChange: handlePaginationPageSizeChange,
+  handleSearchChange: handleComposableSearchChange,
+  handleSortChange: handleComposableSortChange,
+  fetchGames: fetchPaginatedGames,
+} = usePaginatedGames({
+  storageKey: 'manage-stock-page-size',
+  defaultPageSize: 12,
+  defaultSort: 'title',
+})
 
-const isTableReady = computed(() => pageSize.value !== null)
+const isTableReady = computed(() => isReady.value)
 const resolvedPageSize = computed(() => pageSize.value ?? 12)
 
 const canManage = computed(() => {
@@ -132,7 +144,7 @@ const availableCount = computed(() => games.value.filter((game) => game.is_avail
 const lowStockCount = computed(() => games.value.filter((game) => game.stock < 5).length)
 
 onMounted(async () => {
-  pageSize.value = readStoredPageSize(12)
+  initPageSize()
   if (canManage.value) {
     await loadGames()
   }
@@ -153,68 +165,35 @@ async function loadGames() {
     return
   }
 
-  if (pageSize.value === null) {
-    return
-  }
-
-  isLoadingGames.value = true
   try {
-    const skip = (currentPage.value - 1) * resolvedPageSize.value
-    const response: PaginatedGamesResponse = await getGames(
-      skip,
-      resolvedPageSize.value,
-      false,
-      searchQuery.value,
-      -1,
-      -1,
-      sortBy.value,
-    )
-
-    games.value = response.items
-    totalGames.value = response.total
-    totalPages.value = response.total_pages
-    currentPage.value = response.page
+    const gameResponse = await fetchPaginatedGames()
+    if (gameResponse) {
+      games.value = gameResponse.items
+    }
   } catch (error) {
     console.error('Failed to fetch games:', error)
     setErrorMessage('Failed to load games. Please try again.')
-  } finally {
-    isLoadingGames.value = false
   }
 }
 
-function resetToFirstPage() {
-  currentPage.value = 1
-  loadGames()
+async function handleSearchChange(value: string) {
+  handleComposableSearchChange(value)
+  await loadGames()
 }
 
-function handleSearchChange(value: string) {
-  searchQuery.value = value
-  resetToFirstPage()
+async function handleSortChange(value: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock') {
+  handleComposableSortChange(value)
+  await loadGames()
 }
 
-function handleSortChange(value: 'title' | 'price_asc' | 'price_desc' | 'rating' | 'stock') {
-  sortBy.value = value
-  resetToFirstPage()
+async function handlePageSizeChange(value: number) {
+  handlePaginationPageSizeChange(value)
+  await loadGames()
 }
 
-function handlePageSizeChange(value: number) {
-  pageSize.value = value
-  window.localStorage.setItem(pageSizeStorageKey, String(value))
-  resetToFirstPage()
-}
-
-function goToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-    loadGames()
-  }
-}
-
-function readStoredPageSize(defaultValue: number): number {
-  const storedValue = window.localStorage.getItem(pageSizeStorageKey)
-  const parsedValue = storedValue ? Number(storedValue) : Number.NaN
-
-  return Number.isFinite(parsedValue) && parsedValue > 0 ? Math.floor(parsedValue) : defaultValue
+async function goToPage(page: number) {
+  goToPaginatedPage(page)
+  await loadGames()
 }
 
 async function handleCreateGame(payload: GameCreate) {
@@ -224,7 +203,8 @@ async function handleCreateGame(payload: GameCreate) {
     gameFormKey.value += 1
     isAddGameModalOpen.value = false
     setSuccessMessage('Game added successfully.')
-    resetToFirstPage()
+    goToPaginatedPage(1)
+    await loadGames()
   } catch (error) {
     console.error('Failed to create game:', error)
     setErrorMessage('Failed to add game. Check the form and try again.')

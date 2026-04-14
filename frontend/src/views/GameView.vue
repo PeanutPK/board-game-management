@@ -32,9 +32,9 @@
             type="text"
             placeholder="Search games..."
             class="search-input"
-            @input="resetToFirstPage"
+            @input="handleGameSearchChange(($event.target as HTMLInputElement).value)"
           />
-          <select v-model="sortBy" class="sort-select" @change="resetToFirstPage">
+          <select :value="sortBy" class="sort-select" @change="handleGameSortChange(($event.target as HTMLSelectElement).value as any)">
             <option value="title">Sort by Title</option>
             <option value="rating">Sort by Rating</option>
             <option value="price_asc">Sort by Price (Low to High)</option>
@@ -42,9 +42,9 @@
             <option value="stock">Sort by Stock</option>
           </select>
           <select
-            v-model.number="pageSize"
+            :value="pageSize ?? 12"
             class="page-size-select"
-            @change="handlePageSizeChange"
+            @change="handleGamePageSizeChange(Number(($event.target as HTMLSelectElement).value))"
           >
             <option :value="12">12 per page</option>
             <option :value="20">20 per page</option>
@@ -115,7 +115,7 @@
           type="button"
           class="pagination-btn"
           :disabled="currentPage === 1"
-          @click="goToPage(currentPage - 1)"
+          @click="handleGoToPage(currentPage - 1)"
         >
           Previous
         </button>
@@ -128,7 +128,7 @@
           type="button"
           class="pagination-btn"
           :disabled="currentPage === totalPages"
-          @click="goToPage(currentPage + 1)"
+          @click="handleGoToPage(currentPage + 1)"
         >
           Next
         </button>
@@ -188,22 +188,38 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { getToken } from '../api/auth'
 import { createBooking } from '../api/bookings'
 import type { BookingCreate } from '../api/bookings'
-import { getGames, getTrendingGames, type Game } from '../api/games'
+import { getTrendingGames, type Game } from '../api/games'
 import { createOrder } from '../api/orders'
+import { usePaginatedGames } from '../composables/usePaginatedGames'
 import TrendingCarousel from '../components/TrendingCarousel.vue'
 
 const games = ref<Game[]>([])
 const trendingGames = ref<Game[]>([])
-const loading = ref(false)
 const isLoggedIn = ref(!!getToken())
-const searchQuery = ref('')
-const sortBy = ref<'title' | 'rating' | 'price_asc' | 'price_desc' | 'stock'>('rating')
 const currentTrendIndex = ref(0)
-const gameListStorageKey = 'game-list-page-size'
-const currentPage = ref(1)
-const pageSize = ref<number | null>(null)
-const totalGames = ref(0)
-const totalPages = ref(1)
+
+const {
+  currentPage,
+  pageSize,
+  totalGames,
+  totalPages,
+  searchQuery,
+  sortBy,
+  loading,
+  isReady,
+
+  initPageSize,
+
+  goToPage: gotoPage,
+  handlePageSizeChange: handlePaginationPageSizeChange,
+  handleSearchChange,
+  handleSortChange,
+  fetchGames: fetchPaginatedGames,
+} = usePaginatedGames({
+  storageKey: 'game-list-page-size',
+  defaultPageSize: 12,
+  defaultSort: 'rating',
+})
 
 const showBookingModal = ref(false)
 const showOrderModal = ref(false)
@@ -219,8 +235,7 @@ const orderData = ref({
   quantity: 1,
 })
 
-const isGameListReady = computed(() => pageSize.value !== null)
-const resolvedPageSize = computed(() => pageSize.value ?? 12)
+const isGameListReady = computed(() => isReady.value)
 
 watch(trendingGames, (nextGames) => {
   if (nextGames.length === 0) {
@@ -234,7 +249,7 @@ watch(trendingGames, (nextGames) => {
 })
 
 onMounted(async () => {
-  pageSize.value = readStoredPageSize(12)
+  initPageSize()
   await fetchGameData()
 })
 
@@ -316,65 +331,36 @@ async function handleOrder() {
   }
 }
 
-function resetToFirstPage() {
-  currentPage.value = 1
-  fetchGameData()
+async function handleGameSearchChange(value: string) {
+  handleSearchChange(value)
+  await fetchGameData()
 }
 
-function readStoredPageSize(defaultValue: number): number {
-  const storedValue = window.localStorage.getItem(gameListStorageKey)
-  const parsedValue = storedValue ? Number(storedValue) : Number.NaN
-
-  return Number.isFinite(parsedValue) && parsedValue > 0 ? Math.floor(parsedValue) : defaultValue
+async function handleGameSortChange(value: 'title' | 'rating' | 'price_asc' | 'price_desc' | 'stock') {
+  handleSortChange(value)
+  await fetchGameData()
 }
 
-function handlePageSizeChange(event: Event) {
-  const target = event.target as HTMLSelectElement
-  const parsedValue = Number(target.value)
-  const nextPageSize = Number.isFinite(parsedValue) ? parsedValue : 12
-
-  pageSize.value = nextPageSize
-  window.localStorage.setItem(gameListStorageKey, String(nextPageSize))
-  resetToFirstPage()
+async function handleGamePageSizeChange(value: number) {
+  handlePaginationPageSizeChange(value)
+  await fetchGameData()
 }
 
-function goToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-    fetchGameData()
-  }
+async function handleGoToPage(page: number) {
+  gotoPage(page)
+  await fetchGameData()
 }
 
 async function fetchGameData() {
-  if (pageSize.value === null) {
-    return
+  const gameResponse = await fetchPaginatedGames()
+  if (gameResponse) {
+    games.value = gameResponse.items
   }
 
-  loading.value = true
   try {
-    const skip = (currentPage.value - 1) * resolvedPageSize.value
-    const [gameResponse, trendingList] = await Promise.all([
-      getGames(
-        skip,
-        resolvedPageSize.value,
-        false,
-        searchQuery.value,
-        -1,
-        -1,
-        sortBy.value,
-      ),
-      getTrendingGames(4),
-    ])
-
-    games.value = gameResponse.items
-    totalGames.value = gameResponse.total
-    totalPages.value = gameResponse.total_pages
-    currentPage.value = gameResponse.page
-    trendingGames.value = trendingList
+    trendingGames.value = await getTrendingGames(4)
   } catch (error) {
-    console.error('Failed to fetch games:', error)
-  } finally {
-    loading.value = false
+    console.error('Failed to fetch trending games:', error)
   }
 }
 </script>

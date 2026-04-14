@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 import math
 
 from app.db.session import get_db
-from app.schemas.game_schema import GameCreate, GameResponse, GameUpdate, PaginatedResponse
+from app.schemas.game_schema import (
+    GameCreate,
+    GameResponse,
+    GameUpdate,
+    PaginatedResponse,
+)
 from app.services.game_service import GameService
 
 router = APIRouter(prefix="/games", tags=["games"])
@@ -23,7 +28,7 @@ def get_games(
     db: Session = Depends(get_db),
 ):
     """Get all games with pagination, filtering, and sorting.
-    
+
     Query parameters:
     - skip: Number of items to skip (default: 0)
     - limit: Number of items to return (default: 10, max: 100)
@@ -43,10 +48,10 @@ def get_games(
         max_stock=max_stock,
         sort_by=sort_by,
     )
-    
+
     page = (skip // limit) + 1 if limit > 0 else 1
     total_pages = math.ceil(total / limit) if limit > 0 else 1
-    
+
     return {
         "items": [GameResponse.from_orm(game) for game in games],
         "total": total,
