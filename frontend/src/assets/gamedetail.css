@@ -1,0 +1,196 @@
+.detail-view {
+  display: grid;
+  gap: 1rem;
+}
+
+.detail-hero,
+.review-section,
+.game-summary,
+.review-form-card,
+.review-list-card,
+.detail-error,
+.detail-loading {
+  border: 1px solid rgba(67, 86, 99, 0.16);
+  border-radius: 1.1rem;
+  background: var(--color-cgainsboro);
+}
+
+.detail-hero,
+.review-section,
+.game-summary,
+.review-form-card,
+.review-list-card,
+.detail-error,
+.detail-loading {
+  padding: 1.25rem;
+}
+
+.detail-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+}
+
+.detail-title {
+  margin: 0.15rem 0 0.35rem;
+}
+
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+  justify-content: flex-end;
+  align-content: space-between;
+}
+
+.detail-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(67, 86, 99, 0.16);
+  background: #fffdf8;
+  padding: 1rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.detail-grid.compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.review-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.review-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.review-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(67, 86, 99, 0.16);
+  background: #fffdf8;
+  padding: 0.95rem 1rem;
+}
+
+.review-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.review-author {
+  margin: 0;
+  font-weight: 700;
+}
+
+.review-comment {
+  margin: 0.6rem 0 0;
+  color: #5c5244;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.review-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.review-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.review-form select,
+.review-form textarea {
+  border: 1px solid rgba(67, 86, 99, 0.22);
+  border-radius: 0.8rem;
+  background: #fffdf8;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
+.review-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.star-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  padding: 0.1rem;
+  cursor: pointer;
+  color: var(--color-cdarkslategray);
+}
+
+.star-button.active {
+  color: #f4b400;
+}
+
+.star-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.detail-actions {
+  display: flex;
+  margin: 0.7rem 0;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.helper-text {
+  margin: 0;
+  color: #5c5244;
+}
+
+.helper-text.success {
+  color: #245d2e;
+}
+
+.helper-text.error {
+  color: #8f3131;
+}
+
+.review-form-card {
+  max-height: fit-content;
+}
+
+.review-form-card.left-card {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .review-layout,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review-form-card.left-card {
+    display: grid;
+  }
+
+  .review-form-card.right-card {
+    display: none;
+  }
+}

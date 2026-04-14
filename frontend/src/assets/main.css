@@ -56,7 +56,7 @@ main {
 
 .action-btn.primary {
   background: var(--color-cdarksalmon);
-  color: #fff;
+  color: #fffdf8
 }
 
 .action-btn.secondary {
@@ -72,6 +72,12 @@ main {
 .action-btn.success {
   background: var(--color-cdarkslategray);
   color: var(--color-cgainsboro);
+}
+
+.action-btn.tertiary {
+  background: #fffdf8;
+  color: var(--color-cdarkslategray);
+  border: 1px solid rgba(67, 86, 99, 0.22);
 }
 
 .action-btn:disabled {
@@ -133,6 +139,11 @@ main {
   margin: 0;
   font-weight: 700;
   font-size: 2rem;
+}
+
+.panel-header h3 {
+  font-weight: 700;
+  font-size: 1.5rem;
 }
 
 .view-hero h1 {

@@ -29,6 +29,10 @@
   color: #5c5244;
 }
 
+.description {
+  background-color: #fffdf8;
+}
+
 .hero-stats {
   display: flex;
   align-items: center;
