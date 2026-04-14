@@ -56,7 +56,7 @@ import type { Review, ReviewCreate } from '@/api/reviews'
 import ReviewCard from '@/components/game/ReviewCard.vue'
 import ReviewFormCard from '@/components/game/ReviewFormCard.vue'
 
-const props = defineProps<{
+defineProps<{
   reviews: Review[]
   currentUsername: string
   currentUserReview: Review | null
