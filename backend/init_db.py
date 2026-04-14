@@ -5,8 +5,9 @@ python initial_database.py
 """
 
 import csv
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash
 from app.db.session import Base, SessionLocal, engine
@@ -15,6 +16,28 @@ from app.models import booking as _booking_models  # noqa: F401
 from app.models import game as _game_models  # noqa: F401
 from app.models.game import Game
 from app.models.user import User
+
+
+@dataclass(frozen=True)
+class UserSeedCredentials:
+    email: str
+    username: str
+    password: str
+
+
+@dataclass(frozen=True)
+class GameSeedData:
+    title: str
+    description: str
+    price: float
+    rent: float
+    average_rating: float
+    min_players: int
+    max_players: int
+    average_playtime: int
+    recommended_age: int
+    stock: int
+    is_available: bool
 
 
 def upsert_user(
@@ -112,7 +135,7 @@ def _resolve_stock(row: dict[str, str | None]) -> int:
     return max(0, min(stock, 100))
 
 
-def _parse_game_row(row: dict[str, str | None]) -> dict[str, Any] | None:
+def _parse_game_row(row: dict[str, str | None]) -> GameSeedData | None:
     title = (row.get("Name") or "").strip()
     if not title:
         return None
@@ -131,43 +154,67 @@ def _parse_game_row(row: dict[str, str | None]) -> dict[str, Any] | None:
     max_players = max(min_players, _parse_int(row.get("MaxPlayers"), min_players))
     stock = _resolve_stock(row)
 
-    return {
-        "title": title,
-        "description": desc,
-        "price": price,
-        "rent": round(price / 3, 2),
-        "average_rating": avg_rating,
-        "min_players": min_players,
-        "max_players": max_players,
-        "average_playtime": _resolve_average_playtime(row),
-        "recommended_age": _resolve_recommended_age(row),
-        "stock": stock,
-        "is_available": stock > 0,
-    }
+    return GameSeedData(
+        title=title,
+        description=desc,
+        price=price,
+        rent=round(price / 3, 2),
+        average_rating=avg_rating,
+        min_players=min_players,
+        max_players=max_players,
+        average_playtime=_resolve_average_playtime(row),
+        recommended_age=_resolve_recommended_age(row),
+        stock=stock,
+        is_available=stock > 0,
+    )
 
 
-def _apply_game_fields(game: Game, fields: dict[str, Any]) -> None:
-    for key, value in fields.items():
-        if key == "title":
-            continue
-        setattr(game, key, value)
+def _apply_game_fields(game: Game, fields: GameSeedData) -> None:
+    setattr(game, "description", fields.description)
+    setattr(game, "price", fields.price)
+    setattr(game, "rent", fields.rent)
+    setattr(game, "average_rating", fields.average_rating)
+    setattr(game, "min_players", fields.min_players)
+    setattr(game, "max_players", fields.max_players)
+    setattr(game, "average_playtime", fields.average_playtime)
+    setattr(game, "recommended_age", fields.recommended_age)
+    setattr(game, "stock", fields.stock)
+    setattr(game, "is_available", fields.is_available)
 
 
-def _read_setup_values() -> tuple[tuple[str, str, str], tuple[str, str, str]]:
+def _upsert_game(
+    *,
+    db_session: Session,
+    existing_games: dict[str, Game],
+    fields: GameSeedData,
+) -> bool:
+    game = existing_games.get(fields.title)
+    created = game is None
+
+    if game is None:
+        game = Game(title=fields.title)
+        db_session.add(game)
+        existing_games[fields.title] = game
+
+    _apply_game_fields(game, fields)
+    return created
+
+
+def _read_setup_values() -> tuple[UserSeedCredentials, UserSeedCredentials]:
     setup = input("Use default setup? (y/n): ").strip().lower()
     if not setup or setup == "y":
         return (
-            ("admin@example.com", "admin", "adminpassword"),
-            ("staff@example.com", "staff", "staffpassword"),
+            UserSeedCredentials("admin@example.com", "admin", "adminpassword"),
+            UserSeedCredentials("staff@example.com", "staff", "staffpassword"),
         )
 
     return (
-        (
+        UserSeedCredentials(
             input("Admin email: "),
             input("Admin username: "),
             input("Admin password: "),
         ),
-        (
+        UserSeedCredentials(
             input("Staff email: "),
             input("Staff username: "),
             input("Staff password: "),
@@ -176,15 +223,12 @@ def _read_setup_values() -> tuple[tuple[str, str, str], tuple[str, str, str]]:
 
 
 def _validate_distinct_users(
-    admin_values: tuple[str, str, str],
-    staff_values: tuple[str, str, str],
+    admin_values: UserSeedCredentials,
+    staff_values: UserSeedCredentials,
 ) -> None:
-    admin_email, admin_username, _ = admin_values
-    staff_email, staff_username, _ = staff_values
-
-    if admin_email == staff_email:
+    if admin_values.email == staff_values.email:
         raise ValueError("Admin and staff emails must be different")
-    if admin_username == staff_username:
+    if admin_values.username == staff_values.username:
         raise ValueError("Admin and staff usernames must be different")
 
 
@@ -210,17 +254,11 @@ def seed_games_from_csv(path: Path) -> tuple[int, int, int]:
                 if parsed is None:
                     skipped += 1
                     continue
-                title = str(parsed["title"])
-                game = existing_games.get(title)
-                if game is None:
-                    game = Game(title=title)
-                    db.add(game)
-                    existing_games[title] = game
+
+                if _upsert_game(db_session=db, existing_games=existing_games, fields=parsed):
                     created += 1
                 else:
                     updated += 1
-
-                _apply_game_fields(game, parsed)
 
         db.commit()
         return created, updated, skipped
@@ -232,24 +270,22 @@ def main() -> None:
     """Create/update users and seed games from CSV."""
     admin_values, staff_values = _read_setup_values()
     _validate_distinct_users(admin_values, staff_values)
-    admin_email, admin_username, admin_password = admin_values
-    staff_email, staff_username, staff_password = staff_values
 
     # Ensure tables exist before attempting inserts/updates.
     Base.metadata.create_all(bind=engine)
     _ensure_avg_rating_column()
 
     admin_result = upsert_user(
-        email=admin_email,
-        username=admin_username,
-        password=admin_password,
+        email=admin_values.email,
+        username=admin_values.username,
+        password=admin_values.password,
         is_admin=True,
         is_staff=True,
     )
     staff_result = upsert_user(
-        email=staff_email,
-        username=staff_username,
-        password=staff_password,
+        email=staff_values.email,
+        username=staff_values.username,
+        password=staff_values.password,
         is_admin=False,
         is_staff=True,
     )
